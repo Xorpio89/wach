@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="W.A.C.H. - Workout Awareness & Continuous Health">
+
+  <!-- Google Sign-In Client ID (required for Google Drive sync) -->
+  <!-- Get your Client ID from: https://console.cloud.google.com/apis/credentials -->
+  <!-- <meta name="google-signin-client_id" content="YOUR_CLIENT_ID.apps.googleusercontent.com"> -->
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="wach_flutter">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <!-- Preload fonts to prevent FOUT -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=block" rel="stylesheet">
+
+  <title>wach_flutter</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    /* Dark theme for initial loading - matches app design */
+    html, body {
+      background-color: #121212;
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    /* Hide text until fonts are loaded */
+    .fonts-loading * {
+      visibility: hidden;
+    }
+    .fonts-loaded * {
+      visibility: visible;
+    }
+
+    /* Skeleton loading container */
+    #skeleton-loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #121212;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.3s ease-out;
+    }
+
+    #skeleton-loader.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Skeleton animations */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .skeleton-shimmer {
+      background: linear-gradient(90deg, #1E1E1E 25%, #2a2a2a 50%, #1E1E1E 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    /* Main content - centered */
+    .skeleton-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 48px 24px;
+      width: 100%;
+      max-width: 400px;
+      box-sizing: border-box;
+    }
+
+    /* Logo placeholder - rounded square like the actual app */
+    .skeleton-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+
+    /* Title placeholder (W.A.C.H.) */
+    .skeleton-title {
+      width: 160px;
+      height: 36px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    /* Subtitle placeholder */
+    .skeleton-subtitle {
+      width: 280px;
+      height: 16px;
+      border-radius: 4px;
+      margin-bottom: 32px;
+    }
+
+    /* Start Workout card placeholder */
+    .skeleton-card {
+      width: 100%;
+      height: 72px;
+      border-radius: 16px;
+      background-color: #1E1E1E;
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      box-sizing: border-box;
+      gap: 16px;
+    }
+
+    .skeleton-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      flex-shrink: 0;
+    }
+
+    .skeleton-card-text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .skeleton-card-title {
+      width: 120px;
+      height: 20px;
+      border-radius: 4px;
+    }
+
+    .skeleton-card-subtitle {
+      width: 160px;
+      height: 14px;
+      border-radius: 4px;
+    }
+
+    .skeleton-card-arrow {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Footer */
+    .skeleton-footer {
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      position: relative;
+    }
+
+    .skeleton-version {
+      width: 48px;
+      height: 14px;
+      border-radius: 4px;
+    }
+
+    .skeleton-settings {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      position: absolute;
+      right: 24px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Skeleton loader - matches home screen layout -->
+  <div id="skeleton-loader">
+    <div class="skeleton-content">
+      <!-- Logo -->
+      <div class="skeleton-logo skeleton-shimmer"></div>
+
+      <!-- Title: W.A.C.H. -->
+      <div class="skeleton-title skeleton-shimmer"></div>
+
+      <!-- Subtitle -->
+      <div class="skeleton-subtitle skeleton-shimmer"></div>
+
+      <!-- Start Workout Card -->
+      <div class="skeleton-card">
+        <div class="skeleton-card-icon skeleton-shimmer"></div>
+        <div class="skeleton-card-text">
+          <div class="skeleton-card-title skeleton-shimmer"></div>
+          <div class="skeleton-card-subtitle skeleton-shimmer"></div>
+        </div>
+        <div class="skeleton-card-arrow skeleton-shimmer"></div>
+      </div>
+    </div>
+
+    <!-- Footer with version and settings -->
+    <div class="skeleton-footer">
+      <div class="skeleton-version skeleton-shimmer"></div>
+      <div class="skeleton-settings skeleton-shimmer"></div>
+    </div>
+  </div>
+
+  <script>
+    // Handle font loading to prevent FOUT
+    document.documentElement.classList.add('fonts-loading');
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function() {
+        document.documentElement.classList.remove('fonts-loading');
+        document.documentElement.classList.add('fonts-loaded');
+      });
+    } else {
+      // Fallback for browsers without Font Loading API
+      setTimeout(function() {
+        document.documentElement.classList.remove('fonts-loading');
+        document.documentElement.classList.add('fonts-loaded');
+      }, 300);
+    }
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    // Hide skeleton when Flutter is ready
+    window.addEventListener('flutter-first-frame', function() {
+      const skeleton = document.getElementById('skeleton-loader');
+      if (skeleton) {
+        skeleton.classList.add('hidden');
+        setTimeout(() => skeleton.remove(), 300);
+      }
+    });
+  </script>
+</body>
+</html>

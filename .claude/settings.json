@@ -1,0 +1,13 @@
+{
+  "project": {
+    "name": "W.A.C.H.",
+    "description": "Progressive Overload Tracking App",
+    "type": "flutter"
+  },
+  "preferences": {
+    "language": "de",
+    "codeStyle": "dart",
+    "architecture": "clean-architecture",
+    "stateManagement": "riverpod"
+  }
+}
