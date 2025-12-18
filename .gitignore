@@ -73,3 +73,11 @@ secrets/
 
 # Local archives (not for public)
 .git-history-archive/
+
+# Local development files
+webhook_server.py
+feature_requests.txt
+
+# Claude local settings
+.claude/settings.local.json
+.claude/learnings/
