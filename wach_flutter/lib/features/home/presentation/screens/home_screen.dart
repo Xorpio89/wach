@@ -128,6 +128,14 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
 
+              // Battle Card (always visible)
+              Padding(
+                padding: const EdgeInsets.only(top: AppConstants.spacingMd),
+                child: _BattleCard(
+                  onTap: () => context.push('/battle'),
+                ),
+              ),
+
               // History Card (only show if there are sessions)
               Builder(
                 builder: (context) {
@@ -316,6 +324,69 @@ class _ChallengeCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     'Volumenziele setzen & Sätze abhaken',
+                    style: AppTypography.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: AppColors.textSecondary,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BattleCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _BattleCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppConstants.spacingLg),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+          border: Border.all(
+            color: AppColors.secondary.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+              ),
+              child: const Icon(
+                Icons.sports_kabaddi_rounded,
+                color: AppColors.secondary,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: AppConstants.spacingMd),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Battle',
+                    style: AppTypography.headline3,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Spieler vs. Spieler gegen die Uhr',
                     style: AppTypography.bodySmall,
                   ),
                 ],

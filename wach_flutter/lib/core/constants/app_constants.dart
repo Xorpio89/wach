@@ -4,6 +4,11 @@ abstract final class AppConstants {
   static const appName = 'W.A.C.H.';
   static const appFullName = 'Workout Awareness & Continuous Health';
   static const appVersion = '1.0.0';
+  static const isBeta = true;
+
+  // Feedback
+  // TODO: Google-Form-Link (oder anderen Feedback-Link) hier eintragen.
+  static const feedbackUrl = '';
 
   // UI Constants
   static const maxTilesPerPage = 5;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -96,6 +97,27 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _openFeedback(BuildContext context) async {
+    const url = AppConstants.feedbackUrl;
+    if (url.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Feedback-Link ist noch nicht hinterlegt'),
+        ),
+      );
+      return;
+    }
+    final ok = await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication,
+    );
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Konnte Feedback-Formular nicht öffnen')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
@@ -118,9 +140,33 @@ class SettingsScreen extends ConsumerWidget {
             title: AppConstants.appName,
             subtitle: AppConstants.appFullName,
             trailing: Text(
-              'v${AppConstants.appVersion}',
+              'v${AppConstants.appVersion}'
+              '${AppConstants.isBeta ? ' · BETA' : ''}',
               style: AppTypography.bodySmall,
             ),
+          ),
+
+          const SizedBox(height: AppConstants.spacingLg),
+
+          // Beta / Feedback Section
+          _SectionHeader(title: 'Beta'),
+          _SettingsTile(
+            icon: Icons.science_outlined,
+            iconColor: AppColors.secondary,
+            title: 'Beta-Version',
+            subtitle: 'Diese App ist in Entwicklung — Feedback willkommen!',
+          ),
+          _SettingsTile(
+            icon: Icons.feedback_outlined,
+            iconColor: AppColors.primary,
+            title: 'Feedback geben',
+            subtitle: 'Bug melden oder Idee teilen',
+            trailing: const Icon(
+              Icons.open_in_new_rounded,
+              size: 18,
+              color: AppColors.textSecondary,
+            ),
+            onTap: () => _openFeedback(context),
           ),
 
           const SizedBox(height: AppConstants.spacingLg),

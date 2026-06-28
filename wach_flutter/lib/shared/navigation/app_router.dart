@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/battle/presentation/screens/battle_screen.dart';
 import '../../features/challenge/presentation/screens/challenge_detail_screen.dart';
 import '../../features/challenge/presentation/screens/challenges_list_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
@@ -45,6 +46,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/battle',
+        name: 'battle',
+        builder: (context, state) => const BattleScreen(),
+      ),
+      GoRoute(
         path: '/settings',
         name: 'settings',
         builder: (context, state) => const SettingsScreen(),
@@ -65,5 +71,6 @@ abstract final class Routes {
   static const workoutExercise = 'workout-exercise';
   static const challenges = 'challenges';
   static const challengeDetail = 'challenge-detail';
+  static const battle = 'battle';
   static const settings = 'settings';
 }
