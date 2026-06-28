@@ -16,6 +16,7 @@ class DatabaseService {
   static final exercisesStore = stringMapStoreFactory.store('exercises');
   static final sessionsStore = stringMapStoreFactory.store('sessions');
   static final setRecordsStore = stringMapStoreFactory.store('set_records');
+  static final challengesStore = stringMapStoreFactory.store('challenges');
   static final settingsStore = stringMapStoreFactory.store('settings');
 
   /// Get database instance (singleton)
@@ -66,6 +67,7 @@ class DatabaseService {
     await exercisesStore.delete(db);
     await sessionsStore.delete(db);
     await setRecordsStore.delete(db);
+    await challengesStore.delete(db);
 
     debugPrint('[DB] All data cleared');
   }

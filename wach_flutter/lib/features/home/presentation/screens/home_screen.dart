@@ -66,6 +66,29 @@ class HomeScreen extends ConsumerWidget {
                       AppConstants.appFullName,
                       style: AppTypography.bodySmall,
                     ),
+                    const SizedBox(height: AppConstants.spacingSm),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.spacingSm,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary.withOpacity(0.15),
+                        borderRadius:
+                            BorderRadius.circular(AppConstants.radiusSm),
+                        border: Border.all(
+                          color: AppColors.secondary.withOpacity(0.5),
+                        ),
+                      ),
+                      child: Text(
+                        'BETA',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: AppColors.secondary,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -95,6 +118,14 @@ class HomeScreen extends ConsumerWidget {
                     hasPreviousSession: hasPreviousSession && !hasActiveSession,
                   );
                 },
+              ),
+
+              // Challenge Card (always visible)
+              Padding(
+                padding: const EdgeInsets.only(top: AppConstants.spacingMd),
+                child: _ChallengeCard(
+                  onTap: () => context.push('/challenges'),
+                ),
               ),
 
               // History Card (only show if there are sessions)
@@ -231,6 +262,69 @@ class _QuickStartCard extends StatelessWidget {
                   size: 20,
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChallengeCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _ChallengeCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppConstants.spacingLg),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+          border: Border.all(
+            color: AppColors.primary.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+              ),
+              child: const Icon(
+                Icons.emoji_events_rounded,
+                color: AppColors.primary,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: AppConstants.spacingMd),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Challenges',
+                    style: AppTypography.headline3,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Volumenziele setzen & Sätze abhaken',
+                    style: AppTypography.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: AppColors.textSecondary,
+              size: 20,
             ),
           ],
         ),
