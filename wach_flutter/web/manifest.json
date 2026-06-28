@@ -1,11 +1,11 @@
 {
-    "name": "wach_flutter",
-    "short_name": "wach_flutter",
+    "name": "W.A.C.H. — Workout Awareness & Continuous Health",
+    "short_name": "W.A.C.H.",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#121212",
+    "theme_color": "#4CAF50",
+    "description": "Minimalistischer Progressive-Overload-Tracker. Weniger Interaktion, mehr Training.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
