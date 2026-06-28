@@ -95,10 +95,10 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
     super.dispose();
   }
 
-  void _applyMelvinPreset() {
+  void _apply50100Preset() {
     HapticUtils.lightTap();
     setState(() {
-      _title = 'Melvin Elite';
+      _title = '50/100 Challenge';
       for (final stage in _stages) {
         stage.dispose();
       }
@@ -190,9 +190,9 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
           runSpacing: AppConstants.spacingSm,
           children: [
             ActionChip(
-              label: const Text('Melvin Elite'),
+              label: const Text('50/100 Challenge'),
               backgroundColor: AppColors.surfaceVariant,
-              onPressed: _applyMelvinPreset,
+              onPressed: _apply50100Preset,
             ),
             ActionChip(
               label: const Text('100 Dips Sprint'),
