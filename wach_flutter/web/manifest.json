@@ -3,6 +3,7 @@
     "short_name": "W.A.C.H.",
     "start_url": ".",
     "display": "standalone",
+    "display_override": ["fullscreen", "standalone"],
     "background_color": "#121212",
     "theme_color": "#4CAF50",
     "description": "Minimalistischer Progressive-Overload-Tracker. Weniger Interaktion, mehr Training.",
