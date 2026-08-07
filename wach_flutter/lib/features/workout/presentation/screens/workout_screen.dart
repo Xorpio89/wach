@@ -19,6 +19,7 @@ import '../providers/lock_mode_provider.dart';
 import '../providers/session_providers.dart';
 import '../providers/tap_zone_provider.dart';
 import '../providers/timer_provider.dart';
+import '../providers/active_reps_provider.dart';
 import '../widgets/workout_timer.dart';
 
 class WorkoutScreen extends ConsumerStatefulWidget {
@@ -31,8 +32,9 @@ class WorkoutScreen extends ConsumerStatefulWidget {
 }
 
 class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
-  // Track reps per exercise (in-memory for now)
-  final Map<String, int> _repsMap = {};
+  // 2026-08-07 Bugfix: Reps liegen jetzt im app-weiten activeRepsProvider
+  // (vorher Widget-State -> beim Verlassen des Screens verloren).
+  Map<String, int> get _repsMap => ref.read(activeRepsProvider);
   DateTime? _sessionStartTime;
 
   @override
@@ -68,23 +70,20 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     setState(() {
       // Track session start on first rep
       _sessionStartTime ??= DateTime.now();
-      _repsMap[exerciseId] = (_repsMap[exerciseId] ?? 0) + 1;
+      ref.read(activeRepsProvider.notifier).increment(exerciseId);
     });
   }
 
   void _subtractRep(String exerciseId) {
     HapticUtils.lightTap();
     setState(() {
-      final current = _repsMap[exerciseId] ?? 0;
-      if (current > 0) {
-        _repsMap[exerciseId] = current - 1;
-      }
+      ref.read(activeRepsProvider.notifier).decrement(exerciseId);
     });
   }
 
   void _resetReps(String exerciseId) {
     setState(() {
-      _repsMap[exerciseId] = 0;
+      ref.read(activeRepsProvider.notifier).reset(exerciseId);
     });
   }
 
@@ -101,7 +100,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     } else if (action == EditExerciseAction.deleted) {
       // Remove from local reps map
       setState(() {
-        _repsMap.remove(exercise.id);
+        ref.read(activeRepsProvider.notifier).remove(exercise.id);
       });
     }
     // For updated: the stream will auto-refresh
@@ -146,7 +145,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     // Reset timer and reps
     ref.read(timerProvider.notifier).reset();
     setState(() {
-      _repsMap.clear();
+      ref.read(activeRepsProvider.notifier).clear();
       _sessionStartTime = null;
     });
 
@@ -260,6 +259,10 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
   Widget build(BuildContext context) {
     final isLocked = ref.watch(lockModeProvider);
     final exercisesAsync = ref.watch(exercisesStreamProvider);
+    // 2026-08-07: Reps liegen im app-weiten Provider — hier BEOBACHTEN, damit die UI
+    // bei Aenderungen neu baut. Vorher erledigte das setState(); darauf darf sich der
+    // Screen nicht mehr verlassen, sonst haengt die Anzeige nach dem Zurueckkehren.
+    ref.watch(activeRepsProvider);
 
     return GestureDetector(
       onLongPress: _toggleLockMode,

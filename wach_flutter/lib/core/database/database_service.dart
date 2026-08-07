@@ -18,6 +18,10 @@ class DatabaseService {
   static final setRecordsStore = stringMapStoreFactory.store('set_records');
   static final challengesStore = stringMapStoreFactory.store('challenges');
   static final settingsStore = stringMapStoreFactory.store('settings');
+  // 2026-08-07 Bugfix: Reps der LAUFENDEN Session lagen nur im Widget-State
+  // (workout_screen `_repsMap`) und waren beim Verlassen des Screens verloren.
+  // Der Timer ueberlebte, weil er ein app-weiter Provider ist -> Inkonsistenz.
+  static final activeWorkoutStore = stringMapStoreFactory.store('active_workout');
 
   /// Get database instance (singleton)
   Future<Database> get database async {
