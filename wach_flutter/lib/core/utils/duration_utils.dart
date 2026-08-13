@@ -1,17 +1,31 @@
 /// Utility functions for Duration formatting
 extension DurationUtils on Duration {
-  /// Format as MM:SS
+  /// Format as MM:SS, switching to H:MM:SS past the first hour.
+  ///
+  /// Without the hour part the display would roll over back to 00:00
+  /// after 60 minutes, which reads like the timer was reset.
   String toMinutesSeconds() {
     final minutes = inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds = inSeconds.remainder(60).toString().padLeft(2, '0');
+    if (inHours > 0) {
+      return '$inHours:$minutes:$seconds';
+    }
     return '$minutes:$seconds';
   }
 
-  /// Format as MM:SS.ms (with centiseconds)
+  /// Format as MM:SS.ms (with centiseconds).
+  ///
+  /// Past the first hour the centiseconds are dropped: H:MM:SS.cc is too
+  /// wide for the timer display, and hundredths stop being meaningful in
+  /// sessions that long.
   String toMinutesSecondsCentis() {
+    if (inHours > 0) {
+      return toMinutesSeconds();
+    }
     final minutes = inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds = inSeconds.remainder(60).toString().padLeft(2, '0');
-    final centis = (inMilliseconds.remainder(1000) ~/ 10).toString().padLeft(2, '0');
+    final centis =
+        (inMilliseconds.remainder(1000) ~/ 10).toString().padLeft(2, '0');
     return '$minutes:$seconds.$centis';
   }
 

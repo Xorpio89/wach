@@ -128,6 +128,10 @@ class TimerNotifier extends Notifier<TimerState> {
   /// Resume timer
   void resume() {
     if (_startTime == null) return;
+    // Re-anchor the start time so the paused span is not counted. Every
+    // tick derives elapsed from _startTime, so leaving it untouched would
+    // make the pause button a no-op.
+    _startTime = DateTime.now().subtract(state.elapsed);
     state = state.copyWith(isRunning: true);
     _startTimer();
   }
@@ -167,6 +171,21 @@ class TimerNotifier extends Notifier<TimerState> {
   /// Clear target time
   void clearTarget() {
     state = state.copyWith(clearTarget: true, showRemaining: false);
+  }
+
+  /// Einen beendeten Lauf wiederherstellen (für "Rückgängig").
+  ///
+  /// Setzt den Timer pausiert auf [elapsed] zurück, damit ein
+  /// versehentlich beendetes Workout ohne Zeitverlust weitergeht.
+  void restore({required Duration elapsed, Duration? target}) {
+    _timer?.cancel();
+    _startTime = DateTime.now().subtract(elapsed);
+    state = TimerState(
+      elapsed: elapsed,
+      target: target,
+      isRunning: false,
+      isFinished: false,
+    );
   }
 
   /// Toggle between showing elapsed and remaining time
