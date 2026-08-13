@@ -9,31 +9,32 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../exercise/presentation/providers/exercise_providers.dart';
 import '../../data/settings_provider.dart';
+import '../../data/locale_provider.dart';
 import '../../data/sync_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   Future<void> _factoryReset(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+
     // First confirmation
     final firstConfirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text('Factory Reset'),
-        content: const Text(
-          'This will delete ALL your data including exercises and sessions. '
-          'This action cannot be undone.',
-        ),
+        title: Text(l10n.settingsFactoryResetTitle),
+        content: Text(l10n.settingsFactoryResetBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Continue'),
+            child: Text(l10n.commonContinue),
           ),
         ],
       ),
@@ -46,20 +47,17 @@ class SettingsScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text('Are you absolutely sure?'),
-        content: const Text(
-          'All exercises, sessions, and settings will be permanently deleted. '
-          'Type "RESET" to confirm.',
-        ),
+        title: Text(l10n.settingsFactoryResetConfirmTitle),
+        content: Text(l10n.settingsFactoryResetConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('DELETE EVERYTHING'),
+            child: Text(l10n.settingsFactoryResetConfirmAction),
           ),
         ],
       ),
@@ -78,8 +76,8 @@ class SettingsScreen extends ConsumerWidget {
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('All data has been deleted'),
+          SnackBar(
+            content: Text(l10n.settingsFactoryResetDone),
             backgroundColor: AppColors.error,
           ),
         );
@@ -89,7 +87,7 @@ class SettingsScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text(l10n.commonError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -98,12 +96,11 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _openFeedback(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
     const url = AppConstants.feedbackUrl;
     if (url.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Feedback-Link ist noch nicht hinterlegt'),
-        ),
+        SnackBar(content: Text(l10n.settingsFeedbackMissing)),
       );
       return;
     }
@@ -113,18 +110,20 @@ class SettingsScreen extends ConsumerWidget {
     );
     if (!ok && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Konnte Feedback-Formular nicht öffnen')),
+        SnackBar(content: Text(l10n.settingsFeedbackFailed)),
       );
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.surface,
-        title: const Text('Settings'),
+        title: Text(l10n.settingsTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.go('/'),
@@ -134,7 +133,7 @@ class SettingsScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(AppConstants.spacingMd),
         children: [
           // App Info Section
-          _SectionHeader(title: 'App'),
+          _SectionHeader(title: l10n.settingsSectionApp),
           _SettingsTile(
             icon: Icons.info_outline_rounded,
             title: AppConstants.appName,
@@ -149,18 +148,18 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: AppConstants.spacingLg),
 
           // Beta / Feedback Section
-          _SectionHeader(title: 'Beta'),
+          _SectionHeader(title: l10n.settingsSectionBeta),
           _SettingsTile(
             icon: Icons.science_outlined,
             iconColor: AppColors.secondary,
-            title: 'Beta-Version',
-            subtitle: 'Diese App ist in Entwicklung — Feedback willkommen!',
+            title: l10n.settingsBetaTitle,
+            subtitle: l10n.settingsBetaSubtitle,
           ),
           _SettingsTile(
             icon: Icons.feedback_outlined,
             iconColor: AppColors.primary,
-            title: 'Feedback geben',
-            subtitle: 'Bug melden oder Idee teilen',
+            title: l10n.settingsFeedbackTitle,
+            subtitle: l10n.settingsFeedbackSubtitle,
             trailing: const Icon(
               Icons.open_in_new_rounded,
               size: 18,
@@ -172,30 +171,39 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: AppConstants.spacingLg),
 
           // Workout Settings
-          _SectionHeader(title: 'Workout'),
+          _SectionHeader(title: l10n.settingsSectionLanguage),
+          const _LanguageSetting(),
+
+          const SizedBox(height: AppConstants.spacingLg),
+
+          // Workout Settings
+          _SectionHeader(title: l10n.settingsSectionWorkout),
           const _AutoStartTimerSetting(),
 
           const SizedBox(height: AppConstants.spacingLg),
 
           // Quick Add Chips Section
-          _SectionHeader(title: 'Quick Add Chips'),
+          _SectionHeader(title: l10n.settingsSectionQuickChips),
           _QuickChipsSettings(),
 
           const SizedBox(height: AppConstants.spacingLg),
 
           // Cloud Sync Section
-          _SectionHeader(title: 'Cloud Sync'),
+          _SectionHeader(title: l10n.settingsSectionCloudSync),
           const _CloudSyncSettings(),
 
           const SizedBox(height: AppConstants.spacingLg),
 
           // Danger Zone
-          _SectionHeader(title: 'Danger Zone', color: AppColors.error),
+          _SectionHeader(
+            title: l10n.settingsSectionDanger,
+            color: AppColors.error,
+          ),
           _SettingsTile(
             icon: Icons.warning_rounded,
             iconColor: AppColors.error,
-            title: 'Factory Reset',
-            subtitle: 'Delete all data and start fresh',
+            title: l10n.settingsFactoryResetTitle,
+            subtitle: l10n.settingsFactoryResetSubtitle,
             titleColor: AppColors.error,
             onTap: () => _factoryReset(context, ref),
           ),
@@ -205,7 +213,7 @@ class SettingsScreen extends ConsumerWidget {
           // Footer
           Center(
             child: Text(
-              'Made with determination',
+              l10n.settingsFooter,
               style: AppTypography.labelSmall,
             ),
           ),
@@ -294,13 +302,14 @@ class _AutoStartTimerSetting extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final settingsAsync = ref.watch(workoutSettingsProvider);
 
     return settingsAsync.when(
       data: (settings) => _SettingsTile(
         icon: Icons.timer_rounded,
-        title: 'Auto-start Timer',
-        subtitle: 'Start timer on first rep',
+        title: l10n.settingsAutoStartTitle,
+        subtitle: l10n.settingsAutoStartSubtitle,
         trailing: Switch(
           value: settings.autoStartTimerOnFirstRep,
           onChanged: (value) {
@@ -309,15 +318,15 @@ class _AutoStartTimerSetting extends ConsumerWidget {
           activeTrackColor: AppColors.primary.withOpacity(0.5),
         ),
       ),
-      loading: () => const _SettingsTile(
+      loading: () => _SettingsTile(
         icon: Icons.timer_rounded,
-        title: 'Auto-start Timer',
-        subtitle: 'Loading...',
+        title: l10n.settingsAutoStartTitle,
+        subtitle: l10n.commonLoading,
       ),
-      error: (_, __) => const _SettingsTile(
+      error: (_, __) => _SettingsTile(
         icon: Icons.timer_rounded,
-        title: 'Auto-start Timer',
-        subtitle: 'Error loading setting',
+        title: l10n.settingsAutoStartTitle,
+        subtitle: l10n.settingsAutoStartError,
       ),
     );
   }
@@ -326,6 +335,7 @@ class _AutoStartTimerSetting extends ConsumerWidget {
 class _QuickChipsSettings extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final settingsAsync = ref.watch(quickChipSettingsProvider);
 
     return Container(
@@ -338,7 +348,7 @@ class _QuickChipsSettings extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Select exercises for quick add',
+            l10n.settingsQuickChipsHint,
             style: AppTypography.bodySmall,
           ),
           const SizedBox(height: AppConstants.spacingMd),
@@ -378,7 +388,7 @@ class _QuickChipsSettings extends ConsumerWidget {
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, __) => const Text('Error loading settings'),
+            error: (_, __) => Text(l10n.settingsQuickChipsError),
           ),
           const SizedBox(height: AppConstants.spacingMd),
           Row(
@@ -388,7 +398,7 @@ class _QuickChipsSettings extends ConsumerWidget {
                 onPressed: () {
                   ref.read(quickChipSettingsProvider.notifier).resetToDefaults();
                 },
-                child: const Text('Reset'),
+                child: Text(l10n.commonReset),
               ),
             ],
           ),
@@ -402,10 +412,11 @@ class _CloudSyncSettings extends ConsumerWidget {
   const _CloudSyncSettings();
 
   Future<void> _showRestoreDialog(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
     final syncState = ref.read(syncProvider);
     if (!syncState.isSignedIn) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enable sync first')),
+        SnackBar(content: Text(l10n.settingsSyncEnableFirst)),
       );
       return;
     }
@@ -414,7 +425,7 @@ class _CloudSyncSettings extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text('Restore from Cloud'),
+        title: Text(l10n.settingsRestoreTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -423,26 +434,29 @@ class _CloudSyncSettings extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: AppConstants.spacingMd),
                 child: Text(
-                  'Last backup: ${DateFormat('dd.MM.yyyy HH:mm').format(syncState.backupInfo!.lastModified!)}',
+                  l10n.settingsSyncLastBackup(
+                    DateFormat('dd.MM.yyyy HH:mm')
+                        .format(syncState.backupInfo!.lastModified!),
+                  ),
                   style: AppTypography.bodySmall,
                 ),
               ),
-            const Text('How would you like to restore?'),
+            Text(l10n.settingsRestoreQuestion),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(null),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop('merge'),
-            child: const Text('Merge'),
+            child: Text(l10n.settingsRestoreMerge),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop('replace'),
             style: TextButton.styleFrom(foregroundColor: AppColors.secondary),
-            child: const Text('Replace All'),
+            child: Text(l10n.settingsRestoreReplaceAll),
           ),
         ],
       ),
@@ -456,20 +470,17 @@ class _CloudSyncSettings extends ConsumerWidget {
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: AppColors.surface,
-          title: const Text('Replace all local data?'),
-          content: const Text(
-            'This will delete all local sessions and replace them with cloud data. '
-            'This cannot be undone.',
-          ),
+          title: Text(l10n.settingsRestoreReplaceTitle),
+          content: Text(l10n.settingsRestoreReplaceBody),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Cancel'),
+              child: Text(l10n.commonCancel),
             ),
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(true),
               style: TextButton.styleFrom(foregroundColor: AppColors.error),
-              child: const Text('Replace'),
+              child: Text(l10n.settingsRestoreReplace),
             ),
           ],
         ),
@@ -484,7 +495,9 @@ class _CloudSyncSettings extends ConsumerWidget {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result.message ?? result.error ?? 'Unknown result'),
+          content: Text(
+            result.message ?? result.error ?? l10n.settingsRestoreUnknown,
+          ),
           backgroundColor: result.success ? AppColors.primary : AppColors.error,
         ),
       );
@@ -493,6 +506,7 @@ class _CloudSyncSettings extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final syncState = ref.watch(syncProvider);
 
     return Container(
@@ -519,13 +533,13 @@ class _CloudSyncSettings extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Auto-Sync to Google Drive',
+                      l10n.settingsSyncTitle,
                       style: AppTypography.bodyLarge,
                     ),
                     Text(
                       syncState.isSignedIn
-                          ? syncState.userEmail ?? 'Signed in'
-                          : 'Sync sessions to cloud',
+                          ? syncState.userEmail ?? l10n.settingsSyncSignedIn
+                          : l10n.settingsSyncSubtitle,
                       style: AppTypography.bodySmall,
                     ),
                   ],
@@ -571,7 +585,10 @@ class _CloudSyncSettings extends ConsumerWidget {
                     ),
                     const SizedBox(width: AppConstants.spacingSm),
                     Text(
-                      'Last sync: ${DateFormat('dd.MM.yyyy HH:mm').format(syncState.lastSyncTime!)}',
+                      l10n.settingsSyncLastSync(
+                        DateFormat('dd.MM.yyyy HH:mm')
+                            .format(syncState.lastSyncTime!),
+                      ),
                       style: AppTypography.bodySmall,
                     ),
                   ],
@@ -591,7 +608,9 @@ class _CloudSyncSettings extends ConsumerWidget {
                     ),
                     const SizedBox(width: AppConstants.spacingSm),
                     Text(
-                      'Backup size: ${syncState.backupInfo!.formattedSize}',
+                      l10n.settingsSyncBackupSize(
+                        syncState.backupInfo!.formattedSize,
+                      ),
                       style: AppTypography.bodySmall,
                     ),
                   ],
@@ -607,7 +626,7 @@ class _CloudSyncSettings extends ConsumerWidget {
                       ? null
                       : () => _showRestoreDialog(context, ref),
                   icon: const Icon(Icons.cloud_download_rounded, size: 18),
-                  label: const Text('Restore'),
+                  label: Text(l10n.settingsSyncRestore),
                 ),
                 const SizedBox(width: AppConstants.spacingSm),
                 TextButton.icon(
@@ -615,7 +634,7 @@ class _CloudSyncSettings extends ConsumerWidget {
                       ? null
                       : () => ref.read(syncProvider.notifier).syncNow(),
                   icon: const Icon(Icons.cloud_upload_rounded, size: 18),
-                  label: const Text('Sync Now'),
+                  label: Text(l10n.settingsSyncNow),
                 ),
               ],
             ),
@@ -632,6 +651,68 @@ class _CloudSyncSettings extends ConsumerWidget {
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+
+/// Sprachumschalter (Deutsch / Englisch).
+///
+/// Die Sprachnamen stehen bewusst in der jeweiligen Sprache selbst —
+/// wer versehentlich die falsche Sprache waehlt, findet den Weg zurueck
+/// auch dann, wenn er die aktive Sprache nicht lesen kann.
+class _LanguageSetting extends ConsumerWidget {
+  const _LanguageSetting();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final current = ref.watch(localeProvider);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppConstants.spacingSm),
+      padding: const EdgeInsets.all(AppConstants.spacingMd),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.language_rounded, color: AppColors.textSecondary),
+          const SizedBox(width: AppConstants.spacingMd),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.settingsLanguageTitle,
+                    style: AppTypography.bodyLarge),
+                Text(l10n.settingsLanguageSubtitle,
+                    style: AppTypography.bodySmall),
+              ],
+            ),
+          ),
+          SegmentedButton<String>(
+            segments: const [
+              ButtonSegment(value: 'de', label: Text('Deutsch')),
+              ButtonSegment(value: 'en', label: Text('English')),
+            ],
+            selected: {current.languageCode},
+            showSelectedIcon: false,
+            onSelectionChanged: (selection) {
+              ref
+                  .read(localeProvider.notifier)
+                  .setLocale(Locale(selection.first));
+            },
+            style: SegmentedButton.styleFrom(
+              backgroundColor: AppColors.background,
+              foregroundColor: AppColors.textSecondary,
+              selectedBackgroundColor: AppColors.primary.withOpacity(0.2),
+              selectedForegroundColor: AppColors.primary,
+              textStyle: AppTypography.labelSmall,
+            ),
+          ),
         ],
       ),
     );

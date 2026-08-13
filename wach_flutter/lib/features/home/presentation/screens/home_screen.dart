@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../exercise/presentation/providers/exercise_providers.dart';
 import '../../../workout/presentation/providers/session_providers.dart';
 import '../../../workout/presentation/providers/timer_provider.dart';
@@ -81,7 +82,7 @@ class HomeScreen extends ConsumerWidget {
                         ),
                       ),
                       child: Text(
-                        'BETA',
+                        AppLocalizations.of(context).homeBetaBadge,
                         style: AppTypography.labelSmall.copyWith(
                           color: AppColors.secondary,
                           fontWeight: FontWeight.bold,
@@ -197,20 +198,22 @@ class _QuickStartCard extends StatelessWidget {
     this.hasPreviousSession = false,
   });
 
-  String get _title {
-    if (isContinue) return 'Continue Workout';
-    return 'Start Workout';
+  String _title(AppLocalizations l10n) {
+    if (isContinue) return l10n.homeContinueWorkout;
+    return l10n.homeStartWorkout;
   }
 
-  String get _subtitle {
-    if (isContinue) return 'Resume your active session';
-    if (isDefaultSetup) return 'Default calisthenics setup';
-    if (hasPreviousSession) return 'Overload your last session';
-    return 'Begin your training session';
+  String _subtitle(AppLocalizations l10n) {
+    if (isContinue) return l10n.homeSubtitleResume;
+    if (isDefaultSetup) return l10n.homeSubtitleDefaultSetup;
+    if (hasPreviousSession) return l10n.homeSubtitleOverload;
+    return l10n.homeSubtitleBegin;
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -253,12 +256,12 @@ class _QuickStartCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _title,
+                        _title(l10n),
                         style: AppTypography.headline3,
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _subtitle,
+                        _subtitle(l10n),
                         style: AppTypography.bodySmall,
                       ),
                     ],
@@ -318,12 +321,12 @@ class _ChallengeCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Challenges',
+                    AppLocalizations.of(context).homeChallengesTitle,
                     style: AppTypography.headline3,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Volumenziele setzen & Sätze abhaken',
+                    AppLocalizations.of(context).homeChallengesSubtitle,
                     style: AppTypography.bodySmall,
                   ),
                 ],
@@ -381,12 +384,12 @@ class _BattleCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Battle',
+                    AppLocalizations.of(context).homeBattleTitle,
                     style: AppTypography.headline3,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Spieler vs. Spieler gegen die Uhr',
+                    AppLocalizations.of(context).homeBattleSubtitle,
                     style: AppTypography.bodySmall,
                   ),
                 ],
@@ -444,12 +447,12 @@ class _HistoryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Session History',
+                    AppLocalizations.of(context).homeHistoryTitle,
                     style: AppTypography.headline3,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'View your past workouts',
+                    AppLocalizations.of(context).homeHistorySubtitle,
                     style: AppTypography.bodySmall,
                   ),
                 ],

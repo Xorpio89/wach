@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../l10n/app_localizations.dart';
+
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -59,7 +61,7 @@ class _SessionHistoryModal extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Session History',
+                    AppLocalizations.of(context).sessionHistoryTitle,
                     style: AppTypography.headline3,
                   ),
                   IconButton(
@@ -91,14 +93,16 @@ class _SessionHistoryModal extends ConsumerWidget {
                           ),
                           const SizedBox(height: AppConstants.spacingMd),
                           Text(
-                            'No sessions yet',
+                            AppLocalizations.of(context)
+                                .sessionEmptyHistoryTitle,
                             style: AppTypography.headline3.copyWith(
                               color: AppColors.textSecondary,
                             ),
                           ),
                           const SizedBox(height: AppConstants.spacingSm),
                           Text(
-                            'Complete a workout to see your history',
+                            AppLocalizations.of(context)
+                                .sessionEmptyHistorySubtitle,
                             style: AppTypography.bodySmall,
                           ),
                         ],
@@ -120,21 +124,25 @@ class _SessionHistoryModal extends ConsumerWidget {
                             context: context,
                             builder: (ctx) => AlertDialog(
                               backgroundColor: AppColors.surface,
-                              title: const Text('Delete Session?'),
-                              content: const Text(
-                                'Are you sure you want to delete this session?',
+                              title: Text(AppLocalizations.of(context)
+                                  .sessionDeleteTitle),
+                              content: Text(
+                                AppLocalizations.of(context)
+                                    .sessionDeleteBody,
                               ),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.of(ctx).pop(false),
-                                  child: const Text('Cancel'),
+                                  child: Text(AppLocalizations.of(context)
+                                      .commonCancel),
                                 ),
                                 TextButton(
                                   onPressed: () => Navigator.of(ctx).pop(true),
                                   style: TextButton.styleFrom(
                                     foregroundColor: AppColors.error,
                                   ),
-                                  child: const Text('Delete'),
+                                  child: Text(AppLocalizations.of(context)
+                                      .commonDelete),
                                 ),
                               ],
                             ),
@@ -154,7 +162,10 @@ class _SessionHistoryModal extends ConsumerWidget {
                   child: CircularProgressIndicator(),
                 ),
                 error: (error, _) => Center(
-                  child: Text('Error: $error'),
+                  child: Text(
+                    AppLocalizations.of(context)
+                        .commonError(error.toString()),
+                  ),
                 ),
               ),
             ),
@@ -190,8 +201,12 @@ class _SessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('MMM d, yyyy');
-    final timeFormat = DateFormat('HH:mm');
+    // Datumsformat an die App-Sprache koppeln: 'Aug 12, 2026'
+    // gegen '12. Aug. 2026' — sonst bleibt das Datum englisch,
+    // auch wenn die Oberflaeche deutsch ist.
+    final localeName = Localizations.localeOf(context).languageCode;
+    final dateFormat = DateFormat.yMMMd(localeName);
+    final timeFormat = DateFormat.Hm(localeName);
 
     return Container(
       padding: const EdgeInsets.all(AppConstants.spacingMd),
@@ -253,12 +268,14 @@ class _SessionCard extends StatelessWidget {
               const SizedBox(width: AppConstants.spacingMd),
               _StatChip(
                 icon: Icons.fitness_center_rounded,
-                label: '${session.totalReps} reps',
+                label: AppLocalizations.of(context)
+                    .sessionRepsLabel(session.totalReps),
               ),
               const SizedBox(width: AppConstants.spacingMd),
               _StatChip(
                 icon: Icons.list_rounded,
-                label: '${session.exerciseReps.length} exercises',
+                label: AppLocalizations.of(context)
+                    .sessionExercisesLabel(session.exerciseReps.length),
               ),
             ],
           ),
@@ -270,7 +287,8 @@ class _SessionCard extends StatelessWidget {
             spacing: AppConstants.spacingSm,
             runSpacing: AppConstants.spacingXs,
             children: session.exerciseReps.entries.map((entry) {
-              final name = session.exerciseNames[entry.key] ?? 'Unknown';
+              final name = session.exerciseNames[entry.key] ??
+                  AppLocalizations.of(context).sessionUnknownExercise;
               final reps = entry.value;
               return Container(
                 padding: const EdgeInsets.symmetric(

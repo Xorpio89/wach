@@ -5,6 +5,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/haptic_utils.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/progress_bar.dart';
 import '../../domain/entities/challenge.dart';
 import '../providers/challenge_providers.dart';
@@ -31,7 +32,7 @@ class ChallengeDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Challenge'),
+        title: Text(AppLocalizations.of(context).challengeTitle),
         actions: [
           challengeAsync.maybeWhen(
             data: (challenge) => challenge == null
@@ -49,12 +50,12 @@ class ChallengeDetailScreen extends ConsumerWidget {
         child: challengeAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => Center(
-            child: Text('Fehler: $error', style: AppTypography.bodyMedium),
+            child: Text(AppLocalizations.of(context).commonError(error.toString()), style: AppTypography.bodyMedium),
           ),
           data: (challenge) {
             if (challenge == null) {
               return Center(
-                child: Text('Challenge nicht gefunden',
+                child: Text(AppLocalizations.of(context).challengeNotFound,
                     style: AppTypography.bodyMedium),
               );
             }
@@ -151,7 +152,7 @@ class _ChallengeItemSection extends ConsumerWidget {
             TextButton.icon(
               onPressed: () => _showAddSetDialog(context, ref),
               icon: Icon(Icons.add_rounded, color: color, size: 20),
-              label: Text('Satz',
+              label: Text(AppLocalizations.of(context).challengeSet,
                   style: AppTypography.labelLarge.copyWith(color: color)),
             ),
           ],
@@ -179,27 +180,27 @@ class _ChallengeItemSection extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: Text('Satz eintragen — ${item.name}',
+        title: Text(AppLocalizations.of(context).challengeLogSet(item.name),
             style: AppTypography.headline3),
         content: TextField(
           controller: controller,
           autofocus: true,
           keyboardType: TextInputType.number,
           style: AppTypography.bodyLarge,
-          decoration: const InputDecoration(
-            hintText: 'Wiederholungen (z.B. 8)',
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context).challengeRepsHint,
           ),
           onSubmitted: (value) => Navigator.of(ctx).pop(int.tryParse(value)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Abbrechen'),
+            child: Text(AppLocalizations.of(context).commonCancel),
           ),
           ElevatedButton(
             onPressed: () =>
                 Navigator.of(ctx).pop(int.tryParse(controller.text)),
-            child: const Text('Hinzufügen'),
+            child: Text(AppLocalizations.of(context).commonAdd),
           ),
         ],
       ),

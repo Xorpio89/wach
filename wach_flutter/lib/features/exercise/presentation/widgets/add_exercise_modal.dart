@@ -5,6 +5,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/haptic_utils.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../providers/exercise_providers.dart';
 
 /// Modal for adding a new exercise
@@ -69,6 +70,8 @@ class _AddExerciseModalState extends ConsumerState<AddExerciseModal> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       padding: EdgeInsets.only(
         left: AppConstants.spacingMd,
@@ -103,7 +106,7 @@ class _AddExerciseModalState extends ConsumerState<AddExerciseModal> {
 
             // Title
             Text(
-              'Add Exercise',
+              l10n.exerciseAdd,
               style: AppTypography.headline2,
             ),
             const SizedBox(height: AppConstants.spacingLg),
@@ -115,13 +118,13 @@ class _AddExerciseModalState extends ConsumerState<AddExerciseModal> {
               textCapitalization: TextCapitalization.words,
               textInputAction: TextInputAction.next,
               style: AppTypography.bodyLarge,
-              decoration: const InputDecoration(
-                hintText: 'Exercise name',
-                prefixIcon: Icon(Icons.fitness_center_rounded),
+              decoration: InputDecoration(
+                hintText: l10n.exerciseNameHint,
+                prefixIcon: const Icon(Icons.fitness_center_rounded),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Please enter an exercise name';
+                  return l10n.exerciseNameRequired;
                 }
                 return null;
               },
@@ -134,9 +137,9 @@ class _AddExerciseModalState extends ConsumerState<AddExerciseModal> {
               keyboardType: TextInputType.number,
               textInputAction: TextInputAction.done,
               style: AppTypography.bodyLarge,
-              decoration: const InputDecoration(
-                hintText: 'Target reps (optional)',
-                prefixIcon: Icon(Icons.repeat_rounded),
+              decoration: InputDecoration(
+                hintText: l10n.exerciseTargetRepsHint,
+                prefixIcon: const Icon(Icons.repeat_rounded),
               ),
               onFieldSubmitted: (_) => _submit(),
             ),
@@ -156,7 +159,7 @@ class _AddExerciseModalState extends ConsumerState<AddExerciseModal> {
                           color: AppColors.textPrimary,
                         ),
                       )
-                    : const Text('Add Exercise'),
+                    : Text(l10n.exerciseAdd),
               ),
             ),
             const SizedBox(height: AppConstants.spacingSm),

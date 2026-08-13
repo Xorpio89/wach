@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/battle/presentation/screens/battle_screen.dart';
+import '../../l10n/app_localizations.dart';
 import '../../features/challenge/presentation/screens/challenge_detail_screen.dart';
 import '../../features/challenge/presentation/screens/challenges_list_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
@@ -58,7 +59,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(
-        child: Text('Page not found: ${state.uri}'),
+        child: Builder(
+          builder: (context) => Text(
+            AppLocalizations.of(context).routeNotFound('${state.uri}'),
+          ),
+        ),
       ),
     ),
   );

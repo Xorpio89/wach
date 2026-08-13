@@ -5,6 +5,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/haptic_utils.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/battle.dart';
 import '../providers/battle_provider.dart';
 
@@ -27,12 +28,12 @@ class BattleScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Battle'),
+        title: Text(AppLocalizations.of(context).battleTitle),
         actions: [
           if (state.phase != BattlePhase.setup)
             IconButton(
               icon: const Icon(Icons.close_rounded),
-              tooltip: 'Battle beenden',
+              tooltip: AppLocalizations.of(context).battleEnd,
               onPressed: () => ref.read(battleProvider.notifier).reset(),
             ),
         ],
@@ -145,7 +146,7 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
     }
     if (stages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mindestens eine Übung mit Ziel angeben')),
+        SnackBar(content: Text(AppLocalizations.of(context).challengeNeedsExercise)),
       );
       return;
     }
@@ -173,7 +174,7 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
     return ListView(
       padding: const EdgeInsets.all(AppConstants.spacingMd),
       children: [
-        Text('Same-Device Battle', style: AppTypography.headline2),
+        Text(AppLocalizations.of(context).battleSameDevice, style: AppTypography.headline2),
         const SizedBox(height: AppConstants.spacingXs),
         Text(
           'Zwei Spieler, ein Gerät. Nacheinander gegen die Uhr — '
@@ -183,19 +184,19 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
         const SizedBox(height: AppConstants.spacingLg),
 
         // Presets
-        Text('Vorlagen', style: AppTypography.labelLarge),
+        Text(AppLocalizations.of(context).battleTemplateLabel, style: AppTypography.labelLarge),
         const SizedBox(height: AppConstants.spacingSm),
         Wrap(
           spacing: AppConstants.spacingSm,
           runSpacing: AppConstants.spacingSm,
           children: [
             ActionChip(
-              label: const Text('50/100 Challenge'),
+              label: Text(AppLocalizations.of(context).battleTemplate50100),
               backgroundColor: AppColors.surfaceVariant,
               onPressed: _apply50100Preset,
             ),
             ActionChip(
-              label: const Text('100 Dips Sprint'),
+              label: Text(AppLocalizations.of(context).battleTemplate100Dips),
               backgroundColor: AppColors.surfaceVariant,
               onPressed: _applyDipsPreset,
             ),
@@ -204,7 +205,7 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
         const SizedBox(height: AppConstants.spacingLg),
 
         // Players
-        Text('Spieler', style: AppTypography.labelLarge),
+        Text(AppLocalizations.of(context).battlePlayers, style: AppTypography.labelLarge),
         const SizedBox(height: AppConstants.spacingSm),
         Row(
           children: [
@@ -212,7 +213,7 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
               child: TextField(
                 controller: _p1,
                 style: AppTypography.bodyMedium,
-                decoration: const InputDecoration(hintText: 'Spieler 1'),
+                decoration: InputDecoration(hintText: AppLocalizations.of(context).battlePlayer1Hint),
               ),
             ),
             const SizedBox(width: AppConstants.spacingMd),
@@ -220,7 +221,7 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
               child: TextField(
                 controller: _p2,
                 style: AppTypography.bodyMedium,
-                decoration: const InputDecoration(hintText: 'Spieler 2'),
+                decoration: InputDecoration(hintText: AppLocalizations.of(context).battlePlayer2Hint),
               ),
             ),
           ],
@@ -231,8 +232,8 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Aufgabe: $_title', style: AppTypography.labelLarge),
-            Text('Reihenfolge zählt', style: AppTypography.labelSmall),
+            Text(AppLocalizations.of(context).battleTask(_title), style: AppTypography.labelLarge),
+            Text(AppLocalizations.of(context).battleOrderMatters, style: AppTypography.labelSmall),
           ],
         ),
         const SizedBox(height: AppConstants.spacingSm),
@@ -256,7 +257,7 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
                   child: TextField(
                     controller: draft.exercise,
                     style: AppTypography.bodyMedium,
-                    decoration: const InputDecoration(hintText: 'Übung'),
+                    decoration: InputDecoration(hintText: AppLocalizations.of(context).commonExercise),
                   ),
                 ),
                 const SizedBox(width: AppConstants.spacingSm),
@@ -266,7 +267,7 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
                     controller: draft.target,
                     keyboardType: TextInputType.number,
                     style: AppTypography.bodyMedium,
-                    decoration: const InputDecoration(hintText: 'Reps'),
+                    decoration: InputDecoration(hintText: AppLocalizations.of(context).commonReps),
                   ),
                 ),
                 IconButton(
@@ -283,7 +284,7 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
         TextButton.icon(
           onPressed: _addStage,
           icon: const Icon(Icons.add_rounded, color: AppColors.primary),
-          label: Text('Stufe hinzufügen',
+          label: Text(AppLocalizations.of(context).battleAddStage,
               style:
                   AppTypography.labelLarge.copyWith(color: AppColors.primary)),
         ),
@@ -294,8 +295,8 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
           controller: _capMin,
           keyboardType: TextInputType.number,
           style: AppTypography.bodyMedium,
-          decoration: const InputDecoration(
-            hintText: 'Zeitlimit in Minuten (optional, z.B. 5)',
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context).battleTimeLimitHint,
             prefixIcon: Icon(Icons.timer_outlined),
           ),
         ),
@@ -306,7 +307,7 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
           child: ElevatedButton.icon(
             onPressed: _start,
             icon: const Icon(Icons.sports_kabaddi_rounded),
-            label: const Text('Battle starten'),
+            label: Text(AppLocalizations.of(context).battleStart),
           ),
         ),
       ],
@@ -398,10 +399,10 @@ class _BattleRun extends ConsumerWidget {
                       const Icon(Icons.touch_app_rounded,
                           color: AppColors.primary, size: 48),
                       const SizedBox(height: AppConstants.spacingSm),
-                      Text('+1 Rep',
+                      Text(AppLocalizations.of(context).battleAddRep,
                           style: AppTypography.headline3
                               .copyWith(color: AppColors.primary)),
-                      Text('tippen zum Zählen',
+                      Text(AppLocalizations.of(context).battleTapToCount,
                           style: AppTypography.labelSmall),
                     ],
                   ),
@@ -439,7 +440,7 @@ class _BattleRun extends ConsumerWidget {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.error,
                   ),
-                  child: const Text('Aufgeben'),
+                  child: Text(AppLocalizations.of(context).battleGiveUp),
                 ),
               ),
             ],
@@ -455,7 +456,7 @@ class _BattleRun extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: Text('Aufgeben?', style: AppTypography.headline3),
+        title: Text(AppLocalizations.of(context).battleGiveUpTitle, style: AppTypography.headline3),
         content: Text(
           'Der aktuelle Versuch zählt dann als nicht geschafft.',
           style: AppTypography.bodyMedium,
@@ -463,12 +464,12 @@ class _BattleRun extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Weiter'),
+            child: Text(AppLocalizations.of(context).commonContinue),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Aufgeben',
-                style: TextStyle(color: AppColors.error)),
+            child: Text(AppLocalizations.of(context).battleGiveUp,
+                style: const TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -574,14 +575,14 @@ class _BattleResult extends ConsumerWidget {
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => ref.read(battleProvider.notifier).reset(),
-                  child: const Text('Neues Battle'),
+                  child: Text(AppLocalizations.of(context).battleNew),
                 ),
               ),
               const SizedBox(width: AppConstants.spacingSm),
               Expanded(
                 child: ElevatedButton(
                   onPressed: () => ref.read(battleProvider.notifier).rematch(),
-                  child: const Text('Revanche'),
+                  child: Text(AppLocalizations.of(context).battleRematch),
                 ),
               ),
             ],

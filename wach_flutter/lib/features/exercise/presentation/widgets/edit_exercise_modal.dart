@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../../domain/entities/exercise.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../providers/exercise_providers.dart';
 
 /// Result of edit modal action
@@ -86,19 +87,20 @@ class _EditExerciseModalState extends ConsumerState<EditExerciseModal> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text('Delete Exercise?'),
+        title: Text(AppLocalizations.of(context).exerciseDeleteTitle),
         content: Text(
-          'Are you sure you want to delete "${widget.exercise.name}"?',
+          AppLocalizations.of(context)
+              .exerciseDeleteConfirm(widget.exercise.name),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context).commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context).commonDelete),
           ),
         ],
       ),
@@ -127,6 +129,8 @@ class _EditExerciseModalState extends ConsumerState<EditExerciseModal> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       padding: EdgeInsets.only(
         left: AppConstants.spacingMd,
@@ -162,7 +166,7 @@ class _EditExerciseModalState extends ConsumerState<EditExerciseModal> {
 
             // Title
             Text(
-              'Edit Exercise',
+              l10n.exerciseEditTitle,
               style: AppTypography.headline2,
             ),
             const SizedBox(height: AppConstants.spacingLg),
@@ -174,13 +178,13 @@ class _EditExerciseModalState extends ConsumerState<EditExerciseModal> {
               style: AppTypography.bodyLarge,
               textInputAction: TextInputAction.next,
               onFieldSubmitted: (_) => _repsFocusNode.requestFocus(),
-              decoration: const InputDecoration(
-                hintText: 'Exercise name',
+              decoration: InputDecoration(
+                hintText: l10n.exerciseNameHint,
                 prefixIcon: Icon(Icons.fitness_center_rounded),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Please enter an exercise name';
+                  return l10n.exerciseNameRequired;
                 }
                 return null;
               },
@@ -195,8 +199,8 @@ class _EditExerciseModalState extends ConsumerState<EditExerciseModal> {
               style: AppTypography.bodyLarge,
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => _save(),
-              decoration: const InputDecoration(
-                hintText: 'Target reps (optional)',
+              decoration: InputDecoration(
+                hintText: l10n.exerciseTargetRepsHint,
                 prefixIcon: Icon(Icons.repeat_rounded),
               ),
             ),
@@ -211,7 +215,9 @@ class _EditExerciseModalState extends ConsumerState<EditExerciseModal> {
                   child: OutlinedButton.icon(
                     onPressed: _isLoading ? null : _resetReps,
                     icon: const Icon(Icons.restart_alt_rounded),
-                    label: Text('Reset Reps (${widget.currentReps} -> 0)'),
+                    label: Text(
+                      l10n.exerciseResetReps(widget.currentReps),
+                    ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.secondary,
                       side: const BorderSide(color: AppColors.secondary),
@@ -228,7 +234,7 @@ class _EditExerciseModalState extends ConsumerState<EditExerciseModal> {
                   onPressed: _isLoading ? null : _delete,
                   icon: const Icon(Icons.delete_outline_rounded),
                   color: AppColors.error,
-                  tooltip: 'Delete exercise',
+                  tooltip: l10n.exerciseDeleteTooltip,
                 ),
                 const SizedBox(width: AppConstants.spacingSm),
 
@@ -245,7 +251,7 @@ class _EditExerciseModalState extends ConsumerState<EditExerciseModal> {
                               color: AppColors.textPrimary,
                             ),
                           )
-                        : const Text('Save'),
+                        : Text(l10n.commonSave),
                   ),
                 ),
               ],

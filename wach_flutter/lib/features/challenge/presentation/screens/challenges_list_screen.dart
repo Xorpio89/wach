@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../l10n/app_localizations.dart';
+
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -20,19 +22,19 @@ class ChallengesListScreen extends ConsumerWidget {
     final challengesAsync = ref.watch(challengesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Challenges')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).challengesTitle)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showAddChallengeModal(context),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Neu'),
+        label: Text(AppLocalizations.of(context).commonNew),
       ),
       body: SafeArea(
         child: challengesAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => Center(
-            child: Text('Fehler: $error', style: AppTypography.bodyMedium),
+            child: Text(AppLocalizations.of(context).commonError(error.toString()), style: AppTypography.bodyMedium),
           ),
           data: (challenges) {
             if (challenges.isEmpty) {
@@ -87,7 +89,7 @@ class ChallengesListScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: Text('Challenge löschen?', style: AppTypography.headline3),
+        title: Text(AppLocalizations.of(context).challengeDeleteTitle, style: AppTypography.headline3),
         content: Text(
           '"${challenge.name}" wird endgültig entfernt.',
           style: AppTypography.bodyMedium,
@@ -95,12 +97,12 @@ class ChallengesListScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Abbrechen'),
+            child: Text(AppLocalizations.of(context).commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Löschen',
-                style: TextStyle(color: AppColors.error)),
+            child: Text(AppLocalizations.of(context).commonDelete,
+                style: const TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -171,8 +173,8 @@ class _ChallengeCard extends StatelessWidget {
                     if (value == 'delete') onDelete();
                   },
                   itemBuilder: (_) => [
-                    const PopupMenuItem(value: 'edit', child: Text('Bearbeiten')),
-                    const PopupMenuItem(value: 'delete', child: Text('Löschen')),
+                    PopupMenuItem(value: 'edit', child: Text(AppLocalizations.of(context).commonEdit)),
+                    PopupMenuItem(value: 'delete', child: Text(AppLocalizations.of(context).commonDelete)),
                   ],
                 ),
               ],
@@ -209,7 +211,7 @@ class _EmptyChallenges extends StatelessWidget {
             const Icon(Icons.emoji_events_outlined,
                 color: AppColors.textDisabled, size: 64),
             const SizedBox(height: AppConstants.spacingMd),
-            Text('Noch keine Challenges',
+            Text(AppLocalizations.of(context).challengeEmptyTitle,
                 style: AppTypography.headline3, textAlign: TextAlign.center),
             const SizedBox(height: AppConstants.spacingXs),
             Text(
@@ -222,7 +224,7 @@ class _EmptyChallenges extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: onCreate,
-                child: const Text('Challenge erstellen'),
+                child: Text(AppLocalizations.of(context).challengeCreate),
               ),
             ),
             const SizedBox(height: AppConstants.spacingSm),
@@ -230,7 +232,7 @@ class _EmptyChallenges extends StatelessWidget {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: onTemplate,
-                child: const Text('Calisthenics-Vorlage laden'),
+                child: Text(AppLocalizations.of(context).challengeLoadTemplate),
               ),
             ),
           ],

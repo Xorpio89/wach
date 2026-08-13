@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../../domain/entities/challenge.dart';
 import '../providers/challenge_providers.dart';
@@ -124,7 +125,7 @@ class _AddChallengeModalState extends ConsumerState<AddChallengeModal> {
 
     if (items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mindestens eine Übung mit Ziel angeben')),
+        SnackBar(content: Text(AppLocalizations.of(context).challengeNeedsExercise)),
       );
       return;
     }
@@ -211,8 +212,8 @@ class _AddChallengeModalState extends ConsumerState<AddChallengeModal> {
                       textCapitalization: TextCapitalization.words,
                       textInputAction: TextInputAction.next,
                       style: AppTypography.bodyLarge,
-                      decoration: const InputDecoration(
-                        hintText: 'Name der Challenge',
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context).challengeNameHint,
                         prefixIcon: Icon(Icons.emoji_events_rounded),
                       ),
                       validator: (value) {
@@ -228,13 +229,13 @@ class _AddChallengeModalState extends ConsumerState<AddChallengeModal> {
                       keyboardType: TextInputType.number,
                       textInputAction: TextInputAction.next,
                       style: AppTypography.bodyLarge,
-                      decoration: const InputDecoration(
-                        hintText: 'Zeitraum in Tagen (optional)',
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context).challengePeriodHint,
                         prefixIcon: Icon(Icons.calendar_today_rounded),
                       ),
                     ),
                     const SizedBox(height: AppConstants.spacingLg),
-                    Text('Übungen', style: AppTypography.labelLarge),
+                    Text(AppLocalizations.of(context).challengeExercises, style: AppTypography.labelLarge),
                     const SizedBox(height: AppConstants.spacingSm),
                     ..._items.map(_buildItemRow),
                     const SizedBox(height: AppConstants.spacingSm),
@@ -288,7 +289,7 @@ class _AddChallengeModalState extends ConsumerState<AddChallengeModal> {
               controller: draft.name,
               textCapitalization: TextCapitalization.words,
               style: AppTypography.bodyMedium,
-              decoration: const InputDecoration(hintText: 'Übung'),
+              decoration: InputDecoration(hintText: AppLocalizations.of(context).challengeExerciseHint),
             ),
           ),
           const SizedBox(width: AppConstants.spacingSm),
@@ -298,7 +299,7 @@ class _AddChallengeModalState extends ConsumerState<AddChallengeModal> {
               controller: draft.target,
               keyboardType: TextInputType.number,
               style: AppTypography.bodyMedium,
-              decoration: const InputDecoration(hintText: 'Ziel'),
+              decoration: InputDecoration(hintText: AppLocalizations.of(context).challengeGoalHint),
             ),
           ),
           const SizedBox(width: AppConstants.spacingSm),
@@ -308,7 +309,7 @@ class _AddChallengeModalState extends ConsumerState<AddChallengeModal> {
               controller: draft.block,
               keyboardType: TextInputType.number,
               style: AppTypography.bodyMedium,
-              decoration: const InputDecoration(hintText: 'Block'),
+              decoration: InputDecoration(hintText: AppLocalizations.of(context).challengeBlockHint),
             ),
           ),
           IconButton(
