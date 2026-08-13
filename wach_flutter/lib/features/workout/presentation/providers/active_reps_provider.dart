@@ -70,6 +70,19 @@ class ActiveRepsNotifier extends Notifier<Map<String, int>> {
     _persist();
   }
 
+  /// Reps um einen beliebigen Betrag ändern (negativ = abziehen).
+  ///
+  /// Ein einzelner State-Update statt `delta` Aufrufe von [increment] —
+  /// sonst schreibt ein "+10" zehnmal in die Datenbank.
+  void addDelta(String exerciseId, int delta) {
+    if (delta == 0) return;
+    final current = state[exerciseId] ?? 0;
+    final next = (current + delta).clamp(0, 9999);
+    if (next == current) return;
+    state = {...state, exerciseId: next};
+    _persist();
+  }
+
   /// Reps einer Übung auf 0 setzen (Eintrag bleibt bestehen).
   void reset(String exerciseId) {
     state = {...state, exerciseId: 0};
@@ -80,6 +93,13 @@ class ActiveRepsNotifier extends Notifier<Map<String, int>> {
   void remove(String exerciseId) {
     final next = {...state}..remove(exerciseId);
     state = next;
+    _persist();
+  }
+
+  /// Kompletten Rep-Stand zurückspielen (für "Rückgängig" nach dem
+  /// Beenden einer Session).
+  void restoreAll(Map<String, int> reps) {
+    state = {...reps};
     _persist();
   }
 

@@ -15,9 +15,9 @@ import '../../../exercise/presentation/widgets/edit_exercise_modal.dart';
 import '../../../exercise/presentation/widgets/exercise_tile.dart';
 import '../../data/models/session_model.dart';
 import '../../../settings/data/settings_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../providers/lock_mode_provider.dart';
 import '../providers/session_providers.dart';
-import '../providers/tap_zone_provider.dart';
 import '../providers/timer_provider.dart';
 import '../providers/active_reps_provider.dart';
 import '../widgets/workout_timer.dart';
@@ -52,32 +52,32 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     toggleLockMode(ref);
   }
 
-  void _addRep(String exerciseId) {
-    HapticUtils.mediumTap();
+  /// Reps um [delta] ändern (negativ = abziehen).
+  ///
+  /// Die Kachel liefert die Schrittweite (-1/+1/+5/+10), das Haptik-Feedback
+  /// gibt sie selbst — hier wird nur der Zustand geführt.
+  void _changeReps(String exerciseId, int delta) {
+    if (delta == 0) return;
 
     // Check if this is the first rep and auto-start timer if enabled
-    final isFirstRep = _repsMap.values.every((r) => r == 0) || _repsMap.isEmpty;
-    if (isFirstRep) {
-      final workoutSettings = ref.read(workoutSettingsProvider).value;
-      final timerState = ref.read(timerProvider);
-      if (workoutSettings?.autoStartTimerOnFirstRep == true &&
-          !timerState.isRunning &&
-          timerState.elapsed == Duration.zero) {
-        ref.read(timerProvider.notifier).startStopwatch();
+    if (delta > 0) {
+      final isFirstRep =
+          _repsMap.values.every((r) => r == 0) || _repsMap.isEmpty;
+      if (isFirstRep) {
+        final workoutSettings = ref.read(workoutSettingsProvider).value;
+        final timerState = ref.read(timerProvider);
+        if (workoutSettings?.autoStartTimerOnFirstRep == true &&
+            !timerState.isRunning &&
+            timerState.elapsed == Duration.zero) {
+          ref.read(timerProvider.notifier).startStopwatch();
+        }
       }
     }
 
     setState(() {
       // Track session start on first rep
-      _sessionStartTime ??= DateTime.now();
-      ref.read(activeRepsProvider.notifier).increment(exerciseId);
-    });
-  }
-
-  void _subtractRep(String exerciseId) {
-    HapticUtils.lightTap();
-    setState(() {
-      ref.read(activeRepsProvider.notifier).decrement(exerciseId);
+      if (delta > 0) _sessionStartTime ??= DateTime.now();
+      ref.read(activeRepsProvider.notifier).addDelta(exerciseId, delta);
     });
   }
 
@@ -106,40 +106,25 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     // For updated: the stream will auto-refresh
   }
 
+  /// Session beenden — ohne Rueckfrage.
+  ///
+  /// Der Bestaetigungsdialog kompensierte frueher ein mehrdeutiges
+  /// Stop-Icon. Der Knopf heisst jetzt "Workout beenden", sitzt nur im
+  /// pausierten Zustand und braucht deshalb keine Rueckfrage mehr — als
+  /// Netz dient ein "Rueckgaengig" in der Snackbar.
   Future<void> _endSession() async {
     final timerState = ref.read(timerProvider);
     final hasData = timerState.elapsed.inSeconds > 0 || _repsMap.isNotEmpty;
 
-    // Show confirmation if session has data
-    if (hasData) {
-      final confirm = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: AppColors.surface,
-          title: const Text('End Session?'),
-          content: const Text(
-            'Are you sure you want to end this workout session?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              style: TextButton.styleFrom(foregroundColor: AppColors.error),
-              child: const Text('End Session'),
-            ),
-          ],
-        ),
-      );
+    // Zustand fuer das Rueckgaengig-Machen sichern, bevor er faellt.
+    final previousReps = Map<String, int>.from(_repsMap);
+    final previousElapsed = timerState.elapsed;
+    final previousTarget = timerState.target;
+    final previousStart = _sessionStartTime;
 
-      if (confirm != true) return;
-    }
-
-    // Save session if there's data
+    String? savedSessionId;
     if (hasData && _repsMap.values.any((reps) => reps > 0)) {
-      await _saveSession();
+      savedSessionId = await _saveSession();
     }
 
     // Reset timer and reps
@@ -149,13 +134,68 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
       _sessionStartTime = null;
     });
 
-    // Navigate back to home
-    if (mounted) {
-      context.go('/');
-    }
+    if (!mounted) return;
+
+    // Messenger vor der Navigation holen — danach ist dieser Screen weg.
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    context.go('/');
+
+    if (!hasData) return;
+
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        backgroundColor: AppColors.surfaceVariant,
+        duration: const Duration(seconds: 6),
+        content: Text(
+          savedSessionId != null
+              ? l10n.workoutSaved
+              : l10n.workoutEnded,
+          style: AppTypography.bodyMedium,
+        ),
+        action: SnackBarAction(
+          label: l10n.commonUndo,
+          textColor: AppColors.primary,
+          onPressed: () => _undoEndSession(
+            sessionId: savedSessionId,
+            reps: previousReps,
+            elapsed: previousElapsed,
+            target: previousTarget,
+            startedAt: previousStart,
+          ),
+        ),
+      ),
+    );
   }
 
-  Future<void> _saveSession() async {
+  /// Ein beendetes Workout zurueckholen: gespeicherte Session wieder
+  /// loeschen, Reps und Timer-Stand wiederherstellen.
+  Future<void> _undoEndSession({
+    required String? sessionId,
+    required Map<String, int> reps,
+    required Duration elapsed,
+    required Duration? target,
+    required DateTime? startedAt,
+  }) async {
+    if (sessionId != null) {
+      try {
+        await ref
+            .read(sessionNotifierProvider.notifier)
+            .deleteSession(sessionId);
+      } catch (e) {
+        debugPrint('Failed to undo session save: $e');
+      }
+    }
+
+    ref.read(activeRepsProvider.notifier).restoreAll(reps);
+    ref
+        .read(timerProvider.notifier)
+        .restore(elapsed: elapsed, target: target);
+    _sessionStartTime = startedAt;
+  }
+
+  Future<String?> _saveSession() async {
     final timerState = ref.read(timerProvider);
     final exercisesAsync = ref.read(exercisesStreamProvider);
     final exercises = exercisesAsync.value ?? [];
@@ -173,7 +213,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
       _repsMap.entries.where((e) => e.value > 0),
     );
 
-    if (repsWithData.isEmpty) return;
+    if (repsWithData.isEmpty) return null;
 
     final session = SessionModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -186,38 +226,22 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
 
     try {
       await ref.read(sessionNotifierProvider.notifier).saveSession(session);
+      return session.id;
     } catch (e) {
       // Silently fail - don't block ending the session
       debugPrint('Failed to save session: $e');
+      return null;
     }
   }
 
   Widget _buildExerciseTile(Exercise exercise, bool isLocked) {
-    final tapZone = ref.watch(tapZoneProvider);
-
     return ExerciseTile(
       exercise: exercise,
       currentReps: _repsMap[exercise.id] ?? 0,
       isLocked: isLocked,
-      onTap: () => _addRep(exercise.id),
-      onZoneTap: (action) {
-        switch (action) {
-          case TapZoneAction.add:
-            _addRep(exercise.id);
-            break;
-          case TapZoneAction.subtract:
-            _subtractRep(exercise.id);
-            break;
-          case TapZoneAction.none:
-            // In locked mode with no zone, just add
-            if (isLocked) _addRep(exercise.id);
-            break;
-        }
-      },
+      onRepsDelta: (delta) => _changeReps(exercise.id, delta),
       onLongPress: _toggleLockMode,
       onEdit: () => _editExercise(exercise),
-      zonePercent: tapZone.zonePercent,
-      showZoneOverlay: !isLocked && tapZone.showZoneOverlay,
     );
   }
 
@@ -277,9 +301,6 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                 onBack: () => context.go('/'),
               ),
 
-              // Tap Zone Control (only in unlock mode)
-              if (!isLocked) const _TapZoneControl(),
-
               // Timer Section
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -319,7 +340,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                     child: CircularProgressIndicator(),
                   ),
                   error: (error, _) => Center(
-                    child: Text('Error: $error'),
+                    child: Text(AppLocalizations.of(context).commonError(error.toString())),
                   ),
                 ),
               ),
@@ -411,7 +432,9 @@ class _LockStatusBar extends StatelessWidget {
                     ),
                     const SizedBox(width: AppConstants.spacingSm),
                     Text(
-                      isLocked ? 'LOCKED' : 'UNLOCKED',
+                      isLocked
+                          ? AppLocalizations.of(context).workoutLocked
+                          : AppLocalizations.of(context).workoutUnlocked,
                       style: AppTypography.labelSmall.copyWith(
                         color: isLocked ? AppColors.primary : AppColors.secondary,
                         fontWeight: FontWeight.bold,
@@ -419,7 +442,7 @@ class _LockStatusBar extends StatelessWidget {
                     ),
                     const SizedBox(width: AppConstants.spacingSm),
                     Text(
-                      '(Longtap)',
+                      AppLocalizations.of(context).workoutLockHintGesture,
                       style: AppTypography.labelSmall.copyWith(
                         color: AppColors.textSecondary,
                         fontSize: 10,
@@ -431,7 +454,7 @@ class _LockStatusBar extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
                     child: Text(
-                      'Doubletap to +1',
+                      AppLocalizations.of(context).workoutTapHint,
                       style: AppTypography.labelSmall.copyWith(
                         color: AppColors.textSecondary,
                         fontSize: 10,
@@ -490,7 +513,7 @@ class _EmptyState extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onAddExercise,
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Add Exercise'),
+              label: Text(AppLocalizations.of(context).workoutAddExercise),
             ),
           ],
         ],
@@ -738,210 +761,6 @@ class _PaginatedExerciseViewState extends State<_PaginatedExerciseView> {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Tap zone control for configuring +/- areas
-class _TapZoneControl extends ConsumerWidget {
-  const _TapZoneControl();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tapZone = ref.watch(tapZoneProvider);
-    final tapZoneNotifier = ref.read(tapZoneProvider.notifier);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppConstants.spacingMd,
-        vertical: AppConstants.spacingSm,
-      ),
-      color: AppColors.surface,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Toggle button and noob tip
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => tapZoneNotifier.toggleOverlay(),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: tapZone.showZoneOverlay
-                        ? AppColors.primary.withOpacity( 0.2)
-                        : AppColors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: tapZone.showZoneOverlay
-                          ? AppColors.primary.withOpacity( 0.5)
-                          : Colors.transparent,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        tapZone.showZoneOverlay
-                            ? Icons.visibility_rounded
-                            : Icons.visibility_off_rounded,
-                        size: 14,
-                        color: tapZone.showZoneOverlay
-                            ? AppColors.primary
-                            : AppColors.textSecondary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        tapZone.showZoneOverlay ? 'Hide Zones' : 'Show Zones',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: tapZone.showZoneOverlay
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppConstants.spacingSm),
-              Expanded(
-                child: Text(
-                  'Tap zones define +/- areas for reps',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.textDisabled,
-                    fontStyle: FontStyle.italic,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppConstants.spacingSm),
-          // Slider row - visualizes actual tile proportions
-          Row(
-            children: [
-              // Minus indicator (left = subtract zone)
-              Icon(
-                Icons.remove_rounded,
-                size: 18,
-                color: tapZone.zonePercent > 0
-                    ? AppColors.error
-                    : AppColors.textDisabled,
-              ),
-              const SizedBox(width: 8),
-              // Slider - track represents tile (0-100%), max zone is 50%
-              Expanded(
-                child: SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
-                    trackHeight: 8,
-                    // Active = red (minus zone), Inactive = green (plus zone)
-                    activeTrackColor: AppColors.error.withOpacity( 0.7),
-                    inactiveTrackColor: AppColors.primary.withOpacity( 0.5),
-                    thumbColor: AppColors.textPrimary,
-                    thumbShape: const RoundSliderThumbShape(
-                      enabledThumbRadius: 10,
-                    ),
-                    overlayShape: const RoundSliderOverlayShape(
-                      overlayRadius: 16,
-                    ),
-                  ),
-                  child: Slider(
-                    value: tapZone.zonePercent,
-                    min: 0.0,
-                    max: 1.0, // Full range for visual representation
-                    onChanged: (value) {
-                      // Clamp to max 50% for actual zone
-                      tapZoneNotifier.setZonePercent(value.clamp(0.0, 0.5));
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              // Plus indicator (right = add zone)
-              Icon(
-                Icons.add_rounded,
-                size: 18,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: AppConstants.spacingMd),
-              // Percentage display
-              SizedBox(
-                width: 32,
-                child: Text(
-                  '${(tapZone.zonePercent * 100).round()}%',
-                  style: AppTypography.labelSmall.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: tapZone.zonePercent > 0
-                        ? AppColors.error
-                        : AppColors.textSecondary,
-                  ),
-                ),
-              ),
-              // Quick set buttons
-              _QuickSetButton(
-                label: '0',
-                isSelected: tapZone.zonePercent == 0,
-                onTap: () => tapZoneNotifier.setZonePercent(0),
-              ),
-              const SizedBox(width: 4),
-              _QuickSetButton(
-                label: '25',
-                isSelected: (tapZone.zonePercent - 0.25).abs() < 0.01,
-                onTap: () => tapZoneNotifier.setZonePercent(0.25),
-              ),
-              const SizedBox(width: 4),
-              _QuickSetButton(
-                label: '50',
-                isSelected: (tapZone.zonePercent - 0.5).abs() < 0.01,
-                onTap: () => tapZoneNotifier.setZonePercent(0.5),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _QuickSetButton extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _QuickSetButton({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withOpacity( 0.2)
-              : AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.primary
-                : AppColors.surfaceVariant,
-          ),
-        ),
-        child: Text(
-          label,
-          style: AppTypography.labelSmall.copyWith(
-            color: isSelected ? AppColors.primary : AppColors.textSecondary,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-      ),
     );
   }
 }

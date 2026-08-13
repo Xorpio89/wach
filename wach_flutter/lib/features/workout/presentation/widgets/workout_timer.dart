@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/duration_utils.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../providers/timer_provider.dart';
 
 /// Large workout timer display
@@ -17,6 +19,7 @@ class WorkoutTimer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final timerState = ref.watch(timerProvider);
     final timerNotifier = ref.read(timerProvider.notifier);
 
@@ -66,10 +69,10 @@ class WorkoutTimer extends ConsumerWidget {
                     const SizedBox(width: 4),
                     Text(
                       timerState.isOvertime
-                          ? 'OVERTIME'
+                          ? l10n.timerOvertime
                           : timerState.showRemaining
-                              ? 'REMAINING'
-                              : 'ELAPSED',
+                              ? l10n.timerRemaining
+                              : l10n.timerElapsed,
                       style: AppTypography.labelSmall.copyWith(
                         color: timerColor.withOpacity( 0.8),
                         fontSize: 10,
@@ -119,7 +122,7 @@ class WorkoutTimer extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Text(
-              'Target: ${timerState.target!.toMinutesSeconds()}',
+              l10n.timerGoal(timerState.target!.toMinutesSeconds()),
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -167,25 +170,25 @@ class TimerControls extends ConsumerWidget {
     TimerState timerState,
     TimerNotifier timerNotifier,
   ) async {
+    final l10n = AppLocalizations.of(context);
+
     // Show confirmation if timer > 1 minute
     if (timerState.elapsed.inMinutes >= 1) {
       final confirm = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           backgroundColor: AppColors.surface,
-          title: const Text('Reset Timer?'),
-          content: const Text(
-            'Are you sure you want to reset the timer?',
-          ),
+          title: Text(l10n.timerResetTitle),
+          content: Text(l10n.timerResetBody),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('No'),
+              child: Text(l10n.commonCancel),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: TextButton.styleFrom(foregroundColor: AppColors.primary),
-              child: const Text('Yes'),
+              child: Text(l10n.commonReset),
             ),
           ],
         ),
@@ -202,18 +205,26 @@ class TimerControls extends ConsumerWidget {
     TimerNotifier timerNotifier,
     Duration? currentTarget,
   ) async {
-    final result = await showDialog<Duration?>(
+    final result = await showDialog<_TargetDialogResult>(
       context: context,
       builder: (context) => _TargetTimeDialog(currentTarget: currentTarget),
     );
 
-    if (result != null) {
-      timerNotifier.setTarget(result);
+    // null = abgebrochen. Ein Ergebnis mit target == null heisst
+    // "Ziel entfernen" — vorher lieferte der Clear-Knopf Duration.zero,
+    // was als gueltiges 0-Sekunden-Ziel durchging: die Anzeige blieb
+    // auf "Target: 00:00" stehen und der Timer war sofort rot.
+    if (result == null) return;
+    if (result.target == null) {
+      timerNotifier.clearTarget();
+    } else {
+      timerNotifier.setTarget(result.target!);
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final timerState = ref.watch(timerProvider);
     final timerNotifier = ref.read(timerProvider.notifier);
 
@@ -233,92 +244,120 @@ class TimerControls extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    final isPaused =
+        !timerState.isRunning && timerState.elapsed > Duration.zero;
+
+    // Waehrend der Timer laeuft, bleiben nur Ziel und Pause stehen.
+    // Alles, was eine Session beendet oder verwirft, erscheint erst im
+    // pausierten Zustand — vier gleich aussehende Icon-Knoepfe
+    // nebeneinander, zwei davon destruktiv, waren die eigentliche Falle.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // Target time button
-        IconButton(
-          onPressed: () => _setTargetTime(context, timerNotifier, timerState.target),
-          icon: Icon(
-            timerState.target != null
-                ? Icons.flag_rounded
-                : Icons.flag_outlined,
-            size: 24,
-          ),
-          style: IconButton.styleFrom(
-            backgroundColor: timerState.target != null
-                ? AppColors.secondary.withOpacity( 0.2)
-                : AppColors.surfaceVariant,
-            foregroundColor: timerState.target != null
-                ? AppColors.secondary
-                : AppColors.textSecondary,
-            minimumSize: const Size(44, 44),
-          ),
-        ),
-
-        const SizedBox(width: 12),
-
-        // Start/Pause button
-        IconButton(
-          onPressed: () {
-            if (timerState.isRunning) {
-              timerNotifier.pause();
-            } else if (timerState.elapsed > Duration.zero) {
-              timerNotifier.resume();
-            } else {
-              timerNotifier.startStopwatch();
-            }
-          },
-          icon: Icon(
-            timerState.isRunning
-                ? Icons.pause_rounded
-                : Icons.play_arrow_rounded,
-            size: 32,
-          ),
-          style: IconButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.textPrimary,
-            minimumSize: const Size(56, 56),
-          ),
-        ),
-
-        const SizedBox(width: 12),
-
-        // Reset button
-        IconButton(
-          onPressed: timerState.elapsed > Duration.zero
-              ? () => _handleReset(context, timerState, timerNotifier)
-              : null,
-          icon: const Icon(
-            Icons.refresh_rounded,
-            size: 24,
-          ),
-          style: IconButton.styleFrom(
-            backgroundColor: AppColors.surfaceVariant,
-            foregroundColor: AppColors.textPrimary,
-            minimumSize: const Size(44, 44),
-          ),
-        ),
-
-        // End session button
-        if (onEndSession != null) ...[
-          const SizedBox(width: 12),
-          IconButton(
-            onPressed: onEndSession,
-            icon: const Icon(
-              Icons.stop_rounded,
-              size: 24,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Target time button
+            IconButton(
+              onPressed: () =>
+                  _setTargetTime(context, timerNotifier, timerState.target),
+              icon: Icon(
+                timerState.target != null
+                    ? Icons.flag_rounded
+                    : Icons.flag_outlined,
+                size: 24,
+              ),
+              tooltip: timerState.target != null
+                  ? l10n.timerChangeGoal
+                  : l10n.timerSetGoal,
+              style: IconButton.styleFrom(
+                backgroundColor: timerState.target != null
+                    ? AppColors.secondary.withOpacity(0.2)
+                    : AppColors.surfaceVariant,
+                foregroundColor: timerState.target != null
+                    ? AppColors.secondary
+                    : AppColors.textSecondary,
+                minimumSize: const Size(44, 44),
+              ),
             ),
-            style: IconButton.styleFrom(
-              backgroundColor: AppColors.error.withOpacity( 0.2),
-              foregroundColor: AppColors.error,
-              minimumSize: const Size(44, 44),
+
+            const SizedBox(width: 12),
+
+            // Start/Pause button
+            IconButton(
+              onPressed: () {
+                if (timerState.isRunning) {
+                  timerNotifier.pause();
+                } else if (timerState.elapsed > Duration.zero) {
+                  timerNotifier.resume();
+                } else {
+                  timerNotifier.startStopwatch();
+                }
+              },
+              icon: Icon(
+                timerState.isRunning
+                    ? Icons.pause_rounded
+                    : Icons.play_arrow_rounded,
+                size: 32,
+              ),
+              tooltip: timerState.isRunning
+                  ? l10n.timerPause
+                  : isPaused
+                      ? l10n.timerResume
+                      : l10n.timerStart,
+              style: IconButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textPrimary,
+                minimumSize: const Size(56, 56),
+              ),
+            ),
+          ],
+        ),
+
+        // Nur pausiert: beenden und zuruecksetzen.
+        if (isPaused) ...[
+          const SizedBox(height: AppConstants.spacingMd),
+          if (onEndSession != null)
+            SizedBox(
+              width: 220,
+              child: FilledButton.icon(
+                onPressed: onEndSession,
+                icon: const Icon(Icons.check_rounded, size: 22),
+                label: Text(l10n.workoutFinish),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.textPrimary,
+                  minimumSize: const Size(0, 52),
+                  textStyle: AppTypography.labelLarge.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          TextButton.icon(
+            onPressed: () => _handleReset(context, timerState, timerNotifier),
+            icon: const Icon(Icons.refresh_rounded, size: 18),
+            label: Text(l10n.timerResetTime),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.textSecondary,
+              minimumSize: const Size(0, AppConstants.minTouchTargetSize),
             ),
           ),
         ],
       ],
     );
   }
+}
+
+/// Ergebnis des Zielzeit-Dialogs.
+///
+/// Braucht drei unterscheidbare Faelle: abgebrochen (null zurueck),
+/// Ziel entfernen (target == null) und Ziel setzen. Ein blosses
+/// `Duration?` kann "abgebrochen" und "entfernen" nicht trennen.
+class _TargetDialogResult {
+  final Duration? target;
+
+  const _TargetDialogResult(this.target);
 }
 
 /// Dialog for setting target time
@@ -344,9 +383,11 @@ class _TargetTimeDialogState extends State<_TargetTimeDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return AlertDialog(
       backgroundColor: AppColors.surface,
-      title: const Text('Set Target Time'),
+      title: Text(l10n.timerSetGoal),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -368,7 +409,8 @@ class _TargetTimeDialogState extends State<_TargetTimeDialog> {
                     onPressed: () => setState(() => _minutes = (_minutes - 1).clamp(0, 99)),
                     icon: const Icon(Icons.keyboard_arrow_down_rounded),
                   ),
-                  Text('min', style: AppTypography.labelSmall),
+                  Text(l10n.timerMinutesShort,
+                      style: AppTypography.labelSmall),
                 ],
               ),
               Padding(
@@ -390,7 +432,8 @@ class _TargetTimeDialogState extends State<_TargetTimeDialog> {
                     onPressed: () => setState(() => _seconds = (_seconds - 5 + 60) % 60),
                     icon: const Icon(Icons.keyboard_arrow_down_rounded),
                   ),
-                  Text('sec', style: AppTypography.labelSmall),
+                  Text(l10n.timerSecondsShort,
+                      style: AppTypography.labelSmall),
                 ],
               ),
             ],
@@ -402,7 +445,7 @@ class _TargetTimeDialogState extends State<_TargetTimeDialog> {
             runSpacing: 8,
             children: [3, 5, 10, 15, 20, 30, 45, 60].map((mins) {
               return ActionChip(
-                label: Text('$mins min'),
+                label: Text(l10n.timerQuickMinutes(mins)),
                 onPressed: () => setState(() {
                   _minutes = mins;
                   _seconds = 0;
@@ -415,20 +458,29 @@ class _TargetTimeDialogState extends State<_TargetTimeDialog> {
       actions: [
         if (widget.currentTarget != null)
           TextButton(
-            onPressed: () => Navigator.of(context).pop(Duration.zero),
-            child: const Text('Clear'),
+            onPressed: () => Navigator.of(context).pop(
+              const _TargetDialogResult(null),
+            ),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: Text(l10n.timerClearGoal),
           ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l10n.commonCancel),
         ),
         TextButton(
           onPressed: () {
             final duration = Duration(minutes: _minutes, seconds: _seconds);
-            Navigator.of(context).pop(duration);
+            // Ein Ziel von 0 waere sinnlos und faerbt den Timer sofort
+            // rot — dann lieber als "kein Ziel" behandeln.
+            Navigator.of(context).pop(
+              _TargetDialogResult(
+                duration == Duration.zero ? null : duration,
+              ),
+            );
           },
           style: TextButton.styleFrom(foregroundColor: AppColors.primary),
-          child: const Text('Set'),
+          child: Text(l10n.timerSetGoalAction),
         ),
       ],
     );
