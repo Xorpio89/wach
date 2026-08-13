@@ -1,0 +1,262 @@
+{
+  "@@locale": "de",
+  "commonCancel": "Abbrechen",
+  "commonDelete": "Löschen",
+  "commonSave": "Speichern",
+  "commonAdd": "Hinzufügen",
+  "commonEdit": "Bearbeiten",
+  "commonContinue": "Weiter",
+  "commonReset": "Zurücksetzen",
+  "commonClose": "Schließen",
+  "commonDone": "Fertig",
+  "commonNew": "Neu",
+  "commonUndo": "Rückgängig",
+  "commonLoading": "Lädt …",
+  "commonError": "Fehler: {message}",
+  "@commonError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "homeStartWorkout": "Workout starten",
+  "homeContinueWorkout": "Workout fortsetzen",
+  "homeSubtitleResume": "Laufende Session fortsetzen",
+  "homeSubtitleDefaultSetup": "Calisthenics-Standardauswahl",
+  "homeSubtitleOverload": "Letzte Session übertreffen",
+  "homeSubtitleBegin": "Trainingseinheit beginnen",
+  "homeChallengesTitle": "Challenges",
+  "homeChallengesSubtitle": "Volumenziele setzen & Sätze abhaken",
+  "homeBattleTitle": "Battle",
+  "homeBattleSubtitle": "Spieler gegen Spieler gegen die Uhr",
+  "homeHistoryTitle": "Session-Verlauf",
+  "homeHistorySubtitle": "Vergangene Workouts ansehen",
+  "homeBetaBadge": "BETA",
+  "timerElapsed": "VERGANGEN",
+  "timerRemaining": "VERBLEIBEND",
+  "timerOvertime": "ÜBERZIEHUNG",
+  "timerGoal": "Ziel: {time}",
+  "@timerGoal": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "timerStart": "Start",
+  "timerPause": "Pause",
+  "timerResume": "Weiter",
+  "timerSetGoal": "Zielzeit setzen",
+  "timerChangeGoal": "Zielzeit ändern",
+  "timerClearGoal": "Ziel entfernen",
+  "timerSetGoalAction": "Setzen",
+  "timerMinutesShort": "Min",
+  "timerSecondsShort": "Sek",
+  "timerQuickMinutes": "{count} Min",
+  "@timerQuickMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timerResetTitle": "Zeit zurücksetzen?",
+  "timerResetBody": "Die gestoppte Zeit wird auf 00:00 gesetzt. Deine Reps bleiben erhalten.",
+  "timerResetTime": "Zeit zurücksetzen",
+  "workoutFinish": "Workout beenden",
+  "workoutSaved": "Workout gespeichert",
+  "workoutEnded": "Workout beendet",
+  "workoutAddExercise": "Übung hinzufügen",
+  "workoutLocked": "GESPERRT",
+  "workoutUnlocked": "ENTSPERRT",
+  "workoutLockHint": "Lange drücken zum Entsperren",
+  "workoutUnlockHint": "Lange drücken zum Sperren",
+  "exerciseEdit": "Übung bearbeiten",
+  "exerciseNameHint": "Name der Übung",
+  "exerciseTargetRepsHint": "Ziel-Reps (optional)",
+  "exerciseAdd": "Übung hinzufügen",
+  "exerciseDeleteTitle": "Übung löschen?",
+  "exerciseDeleteBody": "Die Übung wird dauerhaft entfernt.",
+  "exerciseDeleteTooltip": "Übung löschen",
+  "exerciseResetReps": "Reps zurücksetzen ({count} → 0)",
+  "@exerciseResetReps": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exerciseEmptyTitle": "Noch keine Übungen",
+  "exerciseEmptySubtitle": "Füge eine Übung hinzu, um zu starten",
+  "sessionHistoryTitle": "Session-Verlauf",
+  "sessionDeleteTitle": "Session löschen?",
+  "sessionDeleteBody": "Diese Session wird dauerhaft entfernt.",
+  "sessionRepsLabel": "{count, plural, =1{1 Rep} other{{count} Reps}}",
+  "@sessionRepsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionExercisesLabel": "{count, plural, =1{1 Übung} other{{count} Übungen}}",
+  "@sessionExercisesLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionEmptyTitle": "Noch keine Sessions",
+  "sessionEmptySubtitle": "Beende ein Workout, um es hier zu sehen",
+  "settingsTitle": "Einstellungen",
+  "settingsSectionApp": "App",
+  "settingsSectionBeta": "Beta",
+  "settingsSectionWorkout": "Workout",
+  "settingsSectionQuickChips": "Schnellauswahl",
+  "settingsSectionCloudSync": "Cloud-Sync",
+  "settingsSectionLanguage": "Sprache",
+  "settingsSectionDanger": "Gefahrenzone",
+  "settingsLanguageTitle": "Sprache",
+  "settingsLanguageSubtitle": "Sprache der App",
+  "settingsLanguageGerman": "Deutsch",
+  "settingsLanguageEnglish": "Englisch",
+  "settingsBetaTitle": "Beta-Version",
+  "settingsBetaSubtitle": "Diese App ist in Entwicklung — Feedback willkommen!",
+  "settingsFeedbackTitle": "Feedback geben",
+  "settingsFeedbackSubtitle": "Fehler melden oder Idee teilen",
+  "settingsFeedbackMissing": "Feedback-Link ist noch nicht hinterlegt",
+  "settingsFeedbackFailed": "Konnte Feedback-Formular nicht öffnen",
+  "settingsAutoStartTitle": "Timer automatisch starten",
+  "settingsAutoStartSubtitle": "Timer beim ersten Rep starten",
+  "settingsAutoStartError": "Einstellung konnte nicht geladen werden",
+  "settingsQuickChipsHint": "Übungen für die Schnellauswahl wählen",
+  "settingsQuickChipsError": "Einstellungen konnten nicht geladen werden",
+  "settingsSyncTitle": "Auto-Sync mit Google Drive",
+  "settingsSyncSignedIn": "Angemeldet",
+  "settingsSyncSubtitle": "Sessions in die Cloud sichern",
+  "settingsSyncEnableFirst": "Bitte zuerst die Synchronisierung aktivieren",
+  "settingsSyncLastSync": "Zuletzt synchronisiert: {date}",
+  "@settingsSyncLastSync": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsSyncLastBackup": "Letztes Backup: {date}",
+  "@settingsSyncLastBackup": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsSyncBackupSize": "Backup-Größe: {size}",
+  "@settingsSyncBackupSize": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsSyncRestore": "Wiederherstellen",
+  "settingsSyncNow": "Jetzt synchronisieren",
+  "settingsRestoreTitle": "Aus der Cloud wiederherstellen",
+  "settingsRestoreQuestion": "Wie möchtest du wiederherstellen?",
+  "settingsRestoreMerge": "Zusammenführen",
+  "settingsRestoreReplaceAll": "Alles ersetzen",
+  "settingsRestoreReplaceTitle": "Alle lokalen Daten ersetzen?",
+  "settingsRestoreReplaceBody": "Alle lokalen Sessions werden gelöscht und durch die Cloud-Daten ersetzt. Das lässt sich nicht rückgängig machen.",
+  "settingsRestoreReplace": "Ersetzen",
+  "settingsRestoreUnknown": "Unbekanntes Ergebnis",
+  "settingsFactoryResetTitle": "Werkseinstellungen",
+  "settingsFactoryResetSubtitle": "Alle Daten löschen und neu beginnen",
+  "settingsFactoryResetBody": "Damit werden ALLE Daten gelöscht, inklusive Übungen und Sessions. Das lässt sich nicht rückgängig machen.",
+  "settingsFactoryResetConfirmTitle": "Bist du ganz sicher?",
+  "settingsFactoryResetConfirmBody": "Alle Übungen, Sessions und Einstellungen werden endgültig gelöscht.",
+  "settingsFactoryResetConfirmAction": "ALLES LÖSCHEN",
+  "settingsFactoryResetDone": "Alle Daten wurden gelöscht",
+  "settingsFooter": "Mit Ausdauer gebaut",
+  "challengesTitle": "Challenges",
+  "challengeTitle": "Challenge",
+  "challengeNotFound": "Challenge nicht gefunden",
+  "challengeDeleteTitle": "Challenge löschen?",
+  "challengeEmptyTitle": "Noch keine Challenges",
+  "challengeEmptySubtitle": "Erstelle eine Challenge oder lade eine Vorlage",
+  "challengeCreate": "Challenge erstellen",
+  "challengeLoadTemplate": "Calisthenics-Vorlage laden",
+  "challengeSet": "Satz",
+  "challengeLogSet": "Satz eintragen — {name}",
+  "@challengeLogSet": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "challengeRepsHint": "Wiederholungen (z. B. 8)",
+  "challengeNameHint": "Name der Challenge",
+  "challengePeriodHint": "Zeitraum in Tagen (optional)",
+  "challengeExercises": "Übungen",
+  "challengeExerciseHint": "Übung",
+  "challengeGoalHint": "Ziel",
+  "challengeBlockHint": "Block",
+  "challengeNeedsExercise": "Mindestens eine Übung mit Ziel angeben",
+  "battleTitle": "Battle",
+  "battleEnd": "Battle beenden",
+  "battleSameDevice": "Battle auf einem Gerät",
+  "battleTemplates": "Vorlagen",
+  "battleTemplate50100": "50/100 Challenge",
+  "battleTemplate100Dips": "100 Dips Sprint",
+  "battlePlayers": "Spieler",
+  "battlePlayer1Hint": "Spieler 1",
+  "battlePlayer2Hint": "Spieler 2",
+  "battleTask": "Aufgabe: {title}",
+  "@battleTask": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "battleOrderMatters": "Reihenfolge zählt",
+  "battleAddStage": "Stufe hinzufügen",
+  "battleTimeLimitHint": "Zeitlimit in Minuten (optional, z. B. 5)",
+  "battleStart": "Battle starten",
+  "battleAddRep": "+1 Rep",
+  "battleTapToCount": "tippen zum Zählen",
+  "battleGiveUp": "Aufgeben",
+  "battleGiveUpTitle": "Aufgeben?",
+  "battleNew": "Neues Battle",
+  "battleRematch": "Revanche",
+  "routeNotFound": "Seite nicht gefunden: {path}",
+  "@routeNotFound": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "exerciseNameRequired": "Bitte einen Namen für die Übung eingeben",
+  "exerciseDeleteConfirm": "Soll „{name}“ wirklich gelöscht werden?",
+  "@exerciseDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "exerciseEditTitle": "Übung bearbeiten",
+  "sessionUnknownExercise": "Unbekannt",
+  "sessionEmptyHistoryTitle": "Noch keine Sessions",
+  "sessionEmptyHistorySubtitle": "Beende ein Workout, um den Verlauf zu sehen",
+  "battleGiveUpConfirm": "Willst du wirklich aufgeben?",
+  "challengeDeleteBody": "Die Challenge wird dauerhaft entfernt.",
+  "commonExercise": "Übung",
+  "commonReps": "Reps",
+  "battleTemplateLabel": "Vorlagen",
+  "workoutLockHintGesture": "(lange drücken)",
+  "workoutTapHint": "Kachel antippen zum Zählen"
+}

@@ -10,6 +10,10 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Lokalisierung (DE/EN)
+  flutter_localizations:
+    sdk: flutter
+
   # State Management
   flutter_riverpod: ^2.5.1
 
@@ -22,7 +26,10 @@ dependencies:
 
   # Utilities
   path_provider: ^2.1.5
-  intl: ^0.20.2
+  # 0.19.0 exakt: flutter_localizations aus dem Flutter-3.24-SDK pinnt
+  # genau diese Version. Nur DateFormat wird genutzt, die API ist
+  # gegenueber 0.20 unveraendert.
+  intl: 0.19.0
   uuid: ^4.5.1
   url_launcher: ^6.3.1
 
@@ -43,3 +50,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Erzeugt AppLocalizations aus lib/l10n/*.arb (Konfiguration: l10n.yaml)
+  generate: true

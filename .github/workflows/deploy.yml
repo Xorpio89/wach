@@ -30,6 +30,14 @@ jobs:
         working-directory: wach_flutter
         run: flutter pub get
 
+      # Erzeugt lib/l10n/app_localizations*.dart aus den ARB-Dateien.
+      # Der Build macht das zwar selbst, `flutter pub get` aber NICHT —
+      # ohne diesen Schritt bricht jeder Befehl, der vor dem Build auf
+      # den generierten Code zugreift (z. B. ein spaeteres `analyze`).
+      - name: Generate localizations
+        working-directory: wach_flutter
+        run: flutter gen-l10n
+
       - name: Build web
         working-directory: wach_flutter
         run: flutter build web --release --base-href "/wach/"

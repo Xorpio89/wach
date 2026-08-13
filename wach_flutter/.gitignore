@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Generierte Lokalisierung (aus lib/l10n/*.arb via `flutter gen-l10n`).
+# Wird von `flutter pub get` und jedem Build automatisch neu erzeugt,
+# weil pubspec.yaml `generate: true` setzt.
+lib/l10n/app_localizations*.dart

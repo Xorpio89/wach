@@ -1,0 +1,15 @@
+# Konfiguration fuer `flutter gen-l10n`.
+arb-dir: lib/l10n
+template-arb-file: app_de.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+
+# Ausgabe direkt nach lib/l10n statt in das synthetische Package
+# flutter_gen: der Import bleibt damit relativ, die erzeugte Klasse ist
+# im Projekt sichtbar und der (inzwischen abgekuendigte) synthetic-package
+# -Mechanismus wird nicht gebraucht.
+synthetic-package: false
+output-dir: lib/l10n
+
+# Deutsch ist Vorlage und Rueckfallsprache.
+nullable-getter: false

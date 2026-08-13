@@ -43,6 +43,48 @@ flutter build web --release --base-href "/wach/"
 
 ---
 
+### KRITISCH: Keine Text-Literale in Widgets
+
+Die App ist zweisprachig (Deutsch = Vorlage, Englisch). **Jeder sichtbare
+Text kommt aus `AppLocalizations`** — ein hartkodierter String erscheint
+sonst in beiden Sprachen gleich und erzeugt genau den Sprach-Mix, den
+die Lokalisierung verhindern soll.
+
+```dart
+// ❌ FALSCH
+Text('Workout beenden')
+
+// ✅ RICHTIG
+Text(AppLocalizations.of(context).workoutFinish)
+```
+
+**Beim Hinzufügen eines Textes:**
+1. Key in `lib/l10n/app_de.arb` **und** `lib/l10n/app_en.arb` eintragen
+2. `flutter gen-l10n` ausführen
+3. Im Widget `AppLocalizations.of(context).<key>` verwenden
+4. `flutter test test/l10n` — der Konsistenztest prüft, ob beide Dateien
+   dieselben Keys und Platzhalter haben
+
+**Stolperfalle:** Sobald ein `AppLocalizations`-Aufruf in einem Widget
+steht, darf der umschließende Konstruktor kein `const` mehr haben.
+
+**Prüfen, ob noch Literale übrig sind:**
+```bash
+grep -rnoE "(Text\(\s*'[^']{2,}'|hintText: '[^']{2,}')" lib --include="*.dart" | grep -v "^lib/l10n/"
+```
+
+Ausnahmen (bewusst nicht übersetzt): Sprachnamen im Umschalter
+(`Deutsch`/`English`), Zahlen-Labels wie `+1`/`+5`, Eigennamen.
+
+> Der generierte Code (`lib/l10n/app_localizations*.dart`) ist in
+> `.gitignore` — er entsteht bei `flutter pub get` und jedem Build neu,
+> weil `pubspec.yaml` `generate: true` setzt.
+
+**`intl` ist auf 0.19.0 gepinnt** — `flutter_localizations` aus dem
+Flutter-3.24-SDK verlangt exakt diese Version. Nicht auf ^0.20 heben.
+
+---
+
 ### Context7 MCP - Automatische Nutzung
 **WICHTIG:** Verwende Context7 MCP automatisch (ohne explizite Aufforderung) für:
 - Code-Generierung
