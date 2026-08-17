@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -15,18 +14,35 @@ import '../../domain/entities/exercise.dart';
 /// Tapping the tile flips it over to a keypad with -1 / +1 / +5 / +10
 /// buttons. This replaces the earlier double-tap-with-zones interaction,
 /// which needed two taps per single rep and had no visible affordance.
+///
+/// The front side is for reading only, the back side holds every control:
+/// that split is what made the separate locked/unlocked mode unnecessary.
 class ExerciseTile extends StatefulWidget {
   final Exercise exercise;
   final int currentReps;
   final int? targetReps;
   final Duration elapsedTime;
   final Duration? targetTime;
-  final bool isLocked;
 
   /// Called with the amount to add (may be negative).
   final void Function(int delta)? onRepsDelta;
-  final VoidCallback? onLongPress;
   final VoidCallback? onEdit;
+
+  /// Loeschen sitzt auf der Rueckseite direkt neben dem Bearbeiten — es
+  /// gehoert zu den Handgriffen an der Uebung selbst, nicht in ein Fenster
+  /// dahinter.
+  final VoidCallback? onDelete;
+
+  /// Ob die Rueckseite mit dem Tastenfeld gezeigt wird.
+  ///
+  /// Der Zustand liegt ausserhalb der Kachel, damit er einen Seitenwechsel
+  /// uebersteht: beim Blaettern wird die Kachel aus dem Baum genommen und
+  /// spaeter neu gebaut — ein Feld in dieser Klasse waere dann verloren.
+  final bool istOffen;
+
+  /// Wunsch, die Kachel umzudrehen. Ob das geschieht, entscheidet die
+  /// Stelle, die [istOffen] fuehrt.
+  final VoidCallback? onToggle;
 
   const ExerciseTile({
     super.key,
@@ -35,25 +51,32 @@ class ExerciseTile extends StatefulWidget {
     this.targetReps,
     this.elapsedTime = Duration.zero,
     this.targetTime,
-    this.isLocked = true,
     this.onRepsDelta,
-    this.onLongPress,
     this.onEdit,
+    this.onDelete,
+    this.istOffen = false,
+    this.onToggle,
   });
 
   @override
   State<ExerciseTile> createState() => _ExerciseTileState();
 }
 
+/// Ab dieser Breite passt die volle Kopfzeile (Name, Zaehler, alle
+/// Knoepfe) nebeneinander. Darunter stehen zwei Kacheln nebeneinander.
+const double _schmaleKachel = 200;
+
+/// Darunter bleibt nur noch der Haken stehen.
+///
+/// So schmal wird eine Kachel, wenn nebenan eine aufgeklappte den groesseren
+/// Anteil bekommt. Bearbeiten und Loeschen weichen dann — auf gut 100 dp
+/// waeren drei Knoepfe ohnehin nicht mehr sicher zu treffen, und beide sind
+/// erreichbar, sobald die Kachel wieder Platz hat.
+const double _sehrSchmaleKachel = 150;
+
 class _ExerciseTileState extends State<ExerciseTile>
     with SingleTickerProviderStateMixin {
-  /// How long the keypad stays open without any input before it flips
-  /// back on its own. Long enough to think between sets, short enough
-  /// that the tile does not stay stuck on its back side.
-  static const _autoCloseDelay = Duration(seconds: 6);
-
   late final AnimationController _flipController;
-  Timer? _autoCloseTimer;
 
   @override
   void initState() {
@@ -61,17 +84,24 @@ class _ExerciseTileState extends State<ExerciseTile>
     _flipController = AnimationController(
       vsync: this,
       duration: AppConstants.quickAnimationDuration,
+      // Eine bereits offene Kachel steht sofort auf der Rueckseite, statt
+      // sich nach dem Blaettern noch einmal sichtbar umzudrehen.
+      value: widget.istOffen ? 1 : 0,
     );
   }
 
   @override
+  void didUpdateWidget(ExerciseTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.istOffen == oldWidget.istOffen) return;
+    widget.istOffen ? _flipController.forward() : _flipController.reverse();
+  }
+
+  @override
   void dispose() {
-    _autoCloseTimer?.cancel();
     _flipController.dispose();
     super.dispose();
   }
-
-  bool get _showsKeypad => _flipController.value > 0.5;
 
   double get _progress {
     final target = widget.targetReps ?? widget.exercise.targetReps;
@@ -81,22 +111,15 @@ class _ExerciseTileState extends State<ExerciseTile>
 
   bool get _isCompleted => _progress >= 1.0;
 
-  void _openKeypad() {
+  /// Umdrehen anfordern.
+  ///
+  /// Waagerechtes Wischen loeste das frueher ebenfalls aus. Das ist
+  /// entfallen, weil auf derselben Achse jetzt der Seitenwechsel liegt —
+  /// zwei Gesten am selben Ort schliessen sich aus, und im Wettstreit
+  /// gewann immer die Kachel, sodass sich keine Seite mehr wechseln liess.
+  void _toggleKeypad() {
     HapticUtils.lightTap();
-    _flipController.forward();
-    _restartAutoClose();
-  }
-
-  void _closeKeypad() {
-    _autoCloseTimer?.cancel();
-    _flipController.reverse();
-  }
-
-  void _restartAutoClose() {
-    _autoCloseTimer?.cancel();
-    _autoCloseTimer = Timer(_autoCloseDelay, () {
-      if (mounted) _flipController.reverse();
-    });
+    widget.onToggle?.call();
   }
 
   void _applyDelta(int delta) {
@@ -105,14 +128,21 @@ class _ExerciseTileState extends State<ExerciseTile>
     if (delta < 0 && widget.currentReps <= 0) return;
     HapticUtils.mediumTap();
     widget.onRepsDelta?.call(delta);
-    _restartAutoClose();
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _showsKeypad ? null : _openKeypad,
-      onLongPress: widget.onLongPress,
+      // Opaque so the whole tile area is tappable, including the padding
+      // between the counter and the border. With the default
+      // `deferToChild` a tap that landed on a gap — or mid-flip, when the
+      // rotated child is only a few pixels wide — hit nothing at all.
+      behavior: HitTestBehavior.opaque,
+      // Ein Tipp auf freie Flaeche dreht die Kachel — auf der Vorderseite
+      // auf, auf der Rueckseite wieder zu. Die Zaehltasten und die beiden
+      // Knoepfe liegen tiefer und bekommen ihren Tipp weiterhin zuerst,
+      // hier landet nur, was daneben geht.
+      onTap: _toggleKeypad,
       child: AnimatedBuilder(
         animation: _flipController,
         builder: (context, _) {
@@ -144,12 +174,10 @@ class _ExerciseTileState extends State<ExerciseTile>
       borderRadius: BorderRadius.circular(AppConstants.radiusLg),
       border: Border.all(
         color: highlighted
-            ? AppColors.secondary.withOpacity(0.6)
+            ? AppColors.secondary.withValues(alpha: 0.6)
             : _isCompleted
-                ? AppColors.primary.withOpacity(0.5)
-                : widget.isLocked
-                    ? AppColors.surfaceVariant
-                    : AppColors.secondary.withOpacity(0.3),
+                ? AppColors.primary.withValues(alpha: 0.5)
+                : AppColors.surfaceVariant,
         width: _isCompleted || highlighted ? 2 : 1,
       ),
     );
@@ -167,13 +195,9 @@ class _ExerciseTileState extends State<ExerciseTile>
         children: [
           Text(
             '${widget.currentReps}',
-            style: (compact
-                    ? AppTypography.headline2
-                    : AppTypography.repCount)
+            style: (compact ? AppTypography.headline2 : AppTypography.repCount)
                 .copyWith(
-              color: _isCompleted
-                  ? AppColors.primary
-                  : AppColors.textPrimary,
+              color: _isCompleted ? AppColors.primary : AppColors.textPrimary,
             ),
           ),
           if (target != null)
@@ -225,16 +249,11 @@ class _ExerciseTileState extends State<ExerciseTile>
                 ),
               ),
               if (_isCompleted)
-                const Padding(
-                  padding: EdgeInsets.only(right: AppConstants.spacingXs),
-                  child: Icon(
-                    Icons.check_circle_rounded,
-                    color: AppColors.primary,
-                    size: 18,
-                  ),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.primary,
+                  size: 18,
                 ),
-              if (!widget.isLocked && widget.onEdit != null)
-                _EditButton(onTap: widget.onEdit!),
             ],
           ),
           Expanded(
@@ -247,6 +266,56 @@ class _ExerciseTileState extends State<ExerciseTile>
   }
 
   Widget _buildKeypadSide() {
+    return LayoutBuilder(
+      builder: (context, kachel) {
+        // Bezugsgroesse fuer die Tastenhoehe ist die ganze Kachel, nicht
+        // der Rest unter der Kopfzeile — sonst haengt die Hoehe daran, wie
+        // hoch die Kopfzeile gerade ausfaellt.
+        final halbeKachel = kachel.maxHeight / 2;
+        return _buildKeypadBody(context, halbeKachel, kachel.maxWidth);
+      },
+    );
+  }
+
+  /// Die vier Zaehltasten nebeneinander.
+  ///
+  /// Auch auf halbbreiten Kacheln bleibt es bei einer Reihe: rund 28 dp je
+  /// Taste reichen hier aus, weil die Tasten hoch sind und dicht
+  /// beieinanderliegen — die Hand bleibt zwischen zwei Zaehlern ohnehin an
+  /// derselben Stelle.
+  Widget _buildKeypadButtons() {
+    Widget taste(String label, int delta) => _RepButton(
+          label: label,
+          isSubtract: delta < 0,
+          enabled: delta > 0 || widget.currentReps > 0,
+          onTap: () => _applyDelta(delta),
+        );
+
+    return Row(
+      children: [
+        Expanded(child: taste('-1', -1)),
+        const SizedBox(width: AppConstants.spacingXs),
+        Expanded(child: taste('+1', 1)),
+        const SizedBox(width: AppConstants.spacingXs),
+        Expanded(child: taste('+5', 5)),
+        const SizedBox(width: AppConstants.spacingXs),
+        Expanded(child: taste('+10', 10)),
+      ],
+    );
+  }
+
+  Widget _buildKeypadBody(
+    BuildContext context,
+    double halbeKachel,
+    double breite,
+  ) {
+    // Stehen zwei Kacheln nebeneinander, bleiben nur rund 140 dp Breite.
+    // Name, Zaehler und zwei Knoepfe passen dann nicht mehr in eine Zeile;
+    // der Name weicht, weil die Vorderseite ihn ohnehin traegt und man die
+    // Kachel gerade selbst angetippt hat.
+    final schmal = breite < _schmaleKachel;
+    final sehrSchmal = breite < _sehrSchmaleKachel;
+
     return Container(
       padding: const EdgeInsets.all(AppConstants.spacingSm),
       decoration: _tileDecoration(highlighted: true),
@@ -256,64 +325,81 @@ class _ExerciseTileState extends State<ExerciseTile>
           // Header: name, live counter, close button.
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  widget.exercise.name,
-                  style: AppTypography.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
+              if (schmal)
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: _buildRepCounter(compact: true),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                )
+              else ...[
+                Expanded(
+                  child: Text(
+                    widget.exercise.name,
+                    style: AppTypography.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-              const SizedBox(width: AppConstants.spacingSm),
-              _buildRepCounter(compact: true),
+                const SizedBox(width: AppConstants.spacingSm),
+                // Darf schrumpfen: mit dreistelligen Zielen ("100 / 100")
+                // und drei Knoepfen daneben wird die Zeile sonst zu breit.
+                Flexible(child: _buildRepCounter(compact: true)),
+              ],
               const SizedBox(width: AppConstants.spacingXs),
+              // Bearbeiten und Loeschen liegen nur auf der Rueckseite: die
+              // Vorderseite bleibt ein reiner Zaehler, damit neben der
+              // Zaehlflaeche nichts sitzt, was man mitten im Satz
+              // versehentlich trifft.
+              if (widget.onDelete != null && !sehrSchmal) ...[
+                _TileIconButton(
+                  icon: Icons.delete_outline_rounded,
+                  color: AppColors.error,
+                  tooltip: AppLocalizations.of(context).exerciseDeleteTooltip,
+                  onTap: widget.onDelete!,
+                  schmal: schmal,
+                ),
+                const SizedBox(width: AppConstants.spacingXs),
+              ],
+              if (widget.onEdit != null && !sehrSchmal) ...[
+                _TileIconButton(
+                  icon: Icons.edit_rounded,
+                  color: AppColors.secondary,
+                  tooltip: AppLocalizations.of(context).exerciseEdit,
+                  onTap: widget.onEdit!,
+                  schmal: schmal,
+                ),
+                const SizedBox(width: AppConstants.spacingXs),
+              ],
               _TileIconButton(
                 icon: Icons.check_rounded,
                 color: AppColors.primary,
                 tooltip: AppLocalizations.of(context).commonDone,
-                onTap: _closeKeypad,
+                onTap: _toggleKeypad,
+                schmal: schmal,
               ),
             ],
           ),
           const SizedBox(height: AppConstants.spacingXs),
-          // Keypad: each button stretches to fill the tile, so the
-          // touch targets are as large as the layout allows.
+          // Die Tasten nehmen hoechstens die halbe Kachel ein. Vorher
+          // fuellten sie den ganzen Rest — auf breiten Anzeigen wurden
+          // daraus riesige Flaechen, die nichts gewinnen: getroffen wird
+          // eine Taste ab etwa Fingerbreite ohnehin sicher.
           Expanded(
-            child: Row(
-              children: [
-                Expanded(
-                  child: _RepButton(
-                    label: '-1',
-                    isSubtract: true,
-                    enabled: widget.currentReps > 0,
-                    onTap: () => _applyDelta(-1),
+            child: LayoutBuilder(
+              builder: (context, rest) {
+                final hoehe = math.min(halbeKachel, rest.maxHeight);
+                return Align(
+                  alignment: Alignment.topCenter,
+                  child: SizedBox(
+                    height: hoehe,
+                    child: _buildKeypadButtons(),
                   ),
-                ),
-                const SizedBox(width: AppConstants.spacingXs),
-                Expanded(
-                  child: _RepButton(
-                    label: '+1',
-                    onTap: () => _applyDelta(1),
-                  ),
-                ),
-                const SizedBox(width: AppConstants.spacingXs),
-                Expanded(
-                  child: _RepButton(
-                    label: '+5',
-                    onTap: () => _applyDelta(5),
-                  ),
-                ),
-                const SizedBox(width: AppConstants.spacingXs),
-                Expanded(
-                  child: _RepButton(
-                    label: '+10',
-                    onTap: () => _applyDelta(10),
-                  ),
-                ),
-              ],
+                );
+              },
             ),
           ),
         ],
@@ -342,7 +428,7 @@ class _RepButton extends StatelessWidget {
     final effectiveColor = enabled ? color : AppColors.textDisabled;
 
     return Material(
-      color: effectiveColor.withOpacity(enabled ? 0.15 : 0.05),
+      color: effectiveColor.withValues(alpha: enabled ? 0.15 : 0.05),
       borderRadius: BorderRadius.circular(AppConstants.radiusMd),
       child: InkWell(
         onTap: enabled ? onTap : null,
@@ -354,7 +440,7 @@ class _RepButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppConstants.radiusMd),
             border: Border.all(
-              color: effectiveColor.withOpacity(enabled ? 0.5 : 0.2),
+              color: effectiveColor.withValues(alpha: enabled ? 0.5 : 0.2),
             ),
           ),
           child: Center(
@@ -375,27 +461,6 @@ class _RepButton extends StatelessWidget {
   }
 }
 
-/// Edit affordance on the front side.
-///
-/// Previously a bare 16px icon with 4px padding — a 24x24 target with no
-/// outline, which was near impossible to hit. Now a visible button that
-/// meets the 48x48 minimum.
-class _EditButton extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _EditButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return _TileIconButton(
-      icon: Icons.edit_rounded,
-      color: AppColors.secondary,
-      tooltip: AppLocalizations.of(context).exerciseEdit,
-      onTap: onTap,
-    );
-  }
-}
-
 /// Small icon button with a full-size touch target and a visible outline.
 class _TileIconButton extends StatelessWidget {
   final IconData icon;
@@ -403,11 +468,17 @@ class _TileIconButton extends StatelessWidget {
   final String tooltip;
   final VoidCallback onTap;
 
+  /// Auf halbbreiten Kacheln schmaler, damit Zaehler und die drei Knoepfe
+  /// nebeneinander bleiben. Die Hoehe bleibt unangetastet — in der
+  /// Wischrichtung des Daumens aendert sich also nichts.
+  final bool schmal;
+
   const _TileIconButton({
     required this.icon,
     required this.color,
     required this.tooltip,
     required this.onTap,
+    this.schmal = false,
   });
 
   @override
@@ -415,17 +486,17 @@ class _TileIconButton extends StatelessWidget {
     return Tooltip(
       message: tooltip,
       child: Material(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.radiusSm),
-          side: BorderSide(color: color.withOpacity(0.5)),
+          side: BorderSide(color: color.withValues(alpha: 0.5)),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
           child: SizedBox(
-            width: AppConstants.minTouchTargetSize,
-            height: 36,
+            width: schmal ? 36 : AppConstants.minTouchTargetSize,
+            height: 44,
             child: Icon(icon, color: color, size: 20),
           ),
         ),

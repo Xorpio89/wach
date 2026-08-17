@@ -60,7 +60,7 @@ class _EditExerciseModalState extends ConsumerState<EditExerciseModal> {
     setState(() => _isLoading = true);
     HapticUtils.lightTap();
 
-    final notifier = ref.read(exerciseNotifierProvider.notifier);
+    final notifier = ref.read(exerciseProvider.notifier);
     final updatedExercise = Exercise(
       id: widget.exercise.id,
       name: _nameController.text.trim(),
@@ -82,45 +82,6 @@ class _EditExerciseModalState extends ConsumerState<EditExerciseModal> {
     }
   }
 
-  Future<void> _delete() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: Text(AppLocalizations.of(context).exerciseDeleteTitle),
-        content: Text(
-          AppLocalizations.of(context)
-              .exerciseDeleteConfirm(widget.exercise.name),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context).commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: Text(AppLocalizations.of(context).commonDelete),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm != true) return;
-
-    setState(() => _isLoading = true);
-    HapticUtils.heavyTap();
-
-    final notifier = ref.read(exerciseNotifierProvider.notifier);
-    final success = await notifier.deleteExercise(widget.exercise.id);
-
-    setState(() => _isLoading = false);
-
-    if (success && mounted) {
-      Navigator.of(context).pop(EditExerciseAction.deleted);
-    }
-  }
-
   void _resetReps() {
     HapticUtils.mediumTap();
     widget.onResetReps?.call();
@@ -136,8 +97,8 @@ class _EditExerciseModalState extends ConsumerState<EditExerciseModal> {
         left: AppConstants.spacingMd,
         right: AppConstants.spacingMd,
         top: AppConstants.spacingMd,
-        bottom: MediaQuery.of(context).viewInsets.bottom +
-            AppConstants.spacingMd,
+        bottom:
+            MediaQuery.of(context).viewInsets.bottom + AppConstants.spacingMd,
       ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
@@ -227,17 +188,13 @@ class _EditExerciseModalState extends ConsumerState<EditExerciseModal> {
               ),
 
             // Action Buttons Row
+            //
+            // Ohne Loeschen: das sitzt jetzt als eigener Knopf auf der
+            // Rueckseite der Kachel, direkt neben dem Stift. Hier lag es
+            // einen Schritt zu tief — man musste erst bearbeiten, um
+            // loeschen zu koennen.
             Row(
               children: [
-                // Delete Button
-                IconButton(
-                  onPressed: _isLoading ? null : _delete,
-                  icon: const Icon(Icons.delete_outline_rounded),
-                  color: AppColors.error,
-                  tooltip: l10n.exerciseDeleteTooltip,
-                ),
-                const SizedBox(width: AppConstants.spacingSm),
-
                 // Save Button
                 Expanded(
                   child: ElevatedButton(
