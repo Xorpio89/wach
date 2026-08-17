@@ -20,8 +20,8 @@ class WorkoutTimer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final timerState = ref.watch(timerProvider);
-    final timerNotifier = ref.read(timerProvider.notifier);
+    final timerState = ref.watch(sessionTimerProvider);
+    final timerNotifier = ref.read(sessionTimerProvider.notifier);
 
     // Determine color based on target and overtime
     Color timerColor;
@@ -51,9 +51,10 @@ class WorkoutTimer extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: timerColor.withOpacity( 0.15),
+                  color: timerColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -63,7 +64,7 @@ class WorkoutTimer extends ConsumerWidget {
                       timerState.showRemaining
                           ? Icons.hourglass_bottom_rounded
                           : Icons.timer_rounded,
-                      color: timerColor.withOpacity( 0.8),
+                      color: timerColor.withValues(alpha: 0.8),
                       size: 14,
                     ),
                     const SizedBox(width: 4),
@@ -74,14 +75,14 @@ class WorkoutTimer extends ConsumerWidget {
                               ? l10n.timerRemaining
                               : l10n.timerElapsed,
                       style: AppTypography.labelSmall.copyWith(
-                        color: timerColor.withOpacity( 0.8),
+                        color: timerColor.withValues(alpha: 0.8),
                         fontSize: 10,
                       ),
                     ),
                     const SizedBox(width: 4),
                     Icon(
                       Icons.swap_horiz_rounded,
-                      color: timerColor.withOpacity( 0.5),
+                      color: timerColor.withValues(alpha: 0.5),
                       size: 12,
                     ),
                   ],
@@ -95,25 +96,33 @@ class WorkoutTimer extends ConsumerWidget {
           onTap: timerState.target != null
               ? () => timerNotifier.toggleShowRemaining()
               : null,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (timerState.isOvertime)
+          // Die Anzeige ist mit 72 px so breit bemessen, dass "00:00.00"
+          // auf einem 360-dp-Geraet gerade eben passt — mit dem
+          // Plus-Zeichen der Ueberzeit passt es nicht mehr. Statt die
+          // Ziffern generell zu verkleinern, skaliert die Anzeige nur dann
+          // herunter, wenn sie sonst ueberliefe.
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (timerState.isOvertime)
+                  Text(
+                    '+',
+                    style: AppTypography.timerLarge.copyWith(
+                      color: timerColor,
+                    ),
+                  ),
                 Text(
-                  '+',
+                  showCentiseconds
+                      ? displayDuration.toMinutesSecondsCentis()
+                      : displayDuration.toMinutesSeconds(),
                   style: AppTypography.timerLarge.copyWith(
                     color: timerColor,
                   ),
                 ),
-              Text(
-                showCentiseconds
-                    ? displayDuration.toMinutesSecondsCentis()
-                    : displayDuration.toMinutesSeconds(),
-                style: AppTypography.timerLarge.copyWith(
-                  color: timerColor,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
 
@@ -141,7 +150,7 @@ class WorkoutTimer extends ConsumerWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity( 0.5),
+                    color: AppColors.primary.withValues(alpha: 0.5),
                     blurRadius: 8,
                     spreadRadius: 2,
                   ),
@@ -157,18 +166,16 @@ class WorkoutTimer extends ConsumerWidget {
 /// Timer control buttons
 class TimerControls extends ConsumerWidget {
   final VoidCallback? onEndSession;
-  final bool isLocked;
 
   const TimerControls({
     super.key,
     this.onEndSession,
-    this.isLocked = false,
   });
 
   Future<void> _handleReset(
     BuildContext context,
     TimerState timerState,
-    TimerNotifier timerNotifier,
+    SessionTimer timerNotifier,
   ) async {
     final l10n = AppLocalizations.of(context);
 
@@ -202,7 +209,7 @@ class TimerControls extends ConsumerWidget {
 
   Future<void> _setTargetTime(
     BuildContext context,
-    TimerNotifier timerNotifier,
+    SessionTimer timerNotifier,
     Duration? currentTarget,
   ) async {
     final result = await showDialog<_TargetDialogResult>(
@@ -225,24 +232,8 @@ class TimerControls extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final timerState = ref.watch(timerProvider);
-    final timerNotifier = ref.read(timerProvider.notifier);
-
-    // In locked mode: only show play button when timer is 0
-    if (isLocked) {
-      if (timerState.elapsed == Duration.zero && !timerState.isRunning) {
-        return IconButton(
-          onPressed: () => timerNotifier.startStopwatch(),
-          icon: const Icon(Icons.play_arrow_rounded, size: 32),
-          style: IconButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.textPrimary,
-            minimumSize: const Size(56, 56),
-          ),
-        );
-      }
-      return const SizedBox.shrink();
-    }
+    final timerState = ref.watch(sessionTimerProvider);
+    final timerNotifier = ref.read(sessionTimerProvider.notifier);
 
     final isPaused =
         !timerState.isRunning && timerState.elapsed > Duration.zero;
@@ -272,7 +263,7 @@ class TimerControls extends ConsumerWidget {
                   : l10n.timerSetGoal,
               style: IconButton.styleFrom(
                 backgroundColor: timerState.target != null
-                    ? AppColors.secondary.withOpacity(0.2)
+                    ? AppColors.secondary.withValues(alpha: 0.2)
                     : AppColors.surfaceVariant,
                 foregroundColor: timerState.target != null
                     ? AppColors.secondary
@@ -398,7 +389,8 @@ class _TargetTimeDialogState extends State<_TargetTimeDialog> {
               Column(
                 children: [
                   IconButton(
-                    onPressed: () => setState(() => _minutes = (_minutes + 1).clamp(0, 99)),
+                    onPressed: () =>
+                        setState(() => _minutes = (_minutes + 1).clamp(0, 99)),
                     icon: const Icon(Icons.keyboard_arrow_up_rounded),
                   ),
                   Text(
@@ -406,11 +398,11 @@ class _TargetTimeDialogState extends State<_TargetTimeDialog> {
                     style: AppTypography.headline1,
                   ),
                   IconButton(
-                    onPressed: () => setState(() => _minutes = (_minutes - 1).clamp(0, 99)),
+                    onPressed: () =>
+                        setState(() => _minutes = (_minutes - 1).clamp(0, 99)),
                     icon: const Icon(Icons.keyboard_arrow_down_rounded),
                   ),
-                  Text(l10n.timerMinutesShort,
-                      style: AppTypography.labelSmall),
+                  Text(l10n.timerMinutesShort, style: AppTypography.labelSmall),
                 ],
               ),
               Padding(
@@ -421,7 +413,8 @@ class _TargetTimeDialogState extends State<_TargetTimeDialog> {
               Column(
                 children: [
                   IconButton(
-                    onPressed: () => setState(() => _seconds = (_seconds + 5) % 60),
+                    onPressed: () =>
+                        setState(() => _seconds = (_seconds + 5) % 60),
                     icon: const Icon(Icons.keyboard_arrow_up_rounded),
                   ),
                   Text(
@@ -429,11 +422,11 @@ class _TargetTimeDialogState extends State<_TargetTimeDialog> {
                     style: AppTypography.headline1,
                   ),
                   IconButton(
-                    onPressed: () => setState(() => _seconds = (_seconds - 5 + 60) % 60),
+                    onPressed: () =>
+                        setState(() => _seconds = (_seconds - 5 + 60) % 60),
                     icon: const Icon(Icons.keyboard_arrow_down_rounded),
                   ),
-                  Text(l10n.timerSecondsShort,
-                      style: AppTypography.labelSmall),
+                  Text(l10n.timerSecondsShort, style: AppTypography.labelSmall),
                 ],
               ),
             ],
