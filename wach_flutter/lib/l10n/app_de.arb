@@ -87,6 +87,35 @@
       }
     }
   },
+  "exerciseShowMoreSuggestions": "{count} weitere anzeigen",
+  "@exerciseShowMoreSuggestions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exerciseShowLessSuggestions": "Weniger anzeigen",
+  "gamificationLevel": "Stufe {level}",
+  "@gamificationLevel": {
+    "placeholders": { "level": { "type": "int" } }
+  },
+  "gamificationToNextLevel": "noch {points} Punkte",
+  "@gamificationToNextLevel": {
+    "placeholders": { "points": { "type": "int" } }
+  },
+  "gamificationStreak": "{days, plural, one{{days} Tag in Folge} other{{days} Tage in Folge}}",
+  "@gamificationStreak": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "gamificationPointsEarned": "+{points} Punkte",
+  "@gamificationPointsEarned": {
+    "placeholders": { "points": { "type": "int" } }
+  },
+  "gamificationLevelUp": "Stufe {level} erreicht!",
+  "@gamificationLevelUp": {
+    "placeholders": { "level": { "type": "int" } }
+  },
   "exerciseEmptyTitle": "Noch keine Übungen",
   "exerciseEmptySubtitle": "Füge eine Übung hinzu, um zu starten",
   "sessionHistoryTitle": "Session-Verlauf",
