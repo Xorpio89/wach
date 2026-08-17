@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,20 +7,62 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/utils/haptic_utils.dart';
 import '../../../exercise/domain/entities/exercise.dart';
 import '../../../exercise/presentation/providers/exercise_providers.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import '../../../exercise/presentation/widgets/add_exercise_modal.dart';
+import '../../../exercise/presentation/widgets/delete_exercise_dialog.dart';
 import '../../../exercise/presentation/widgets/edit_exercise_modal.dart';
 import '../../../exercise/presentation/widgets/exercise_tile.dart';
 import '../../data/models/session_model.dart';
 import '../../../settings/data/settings_provider.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../providers/lock_mode_provider.dart';
 import '../providers/session_providers.dart';
+import '../providers/open_tile_provider.dart';
+import '../providers/session_start_provider.dart';
 import '../providers/timer_provider.dart';
 import '../providers/active_reps_provider.dart';
 import '../widgets/workout_timer.dart';
+
+/// Die Uebungskacheln einer Seite, untereinander in voller Breite.
+///
+/// Bewusst ohne zweite Spalte: halbierte Kacheln liessen der aufgeklappten
+/// Rueckseite zu wenig Platz fuer Zaehler, Knoepfe und Zaehltasten. Passen
+/// nicht alle Uebungen auf eine Seite, wird stattdessen geblaettert.
+///
+/// Die Hoehe ist auf [AppConstants.maxExerciseTileHeight] gedeckelt: bei
+/// einer einzigen Uebung fuellte die Kachel sonst den ganzen Bildschirm,
+/// ohne dass mehr darauf zu sehen waere.
+Widget buildTileLayout(
+  List<Exercise> exercises,
+  Widget Function(Exercise) buildTile,
+) {
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      final luecken = AppConstants.spacingSm * (exercises.length - 1);
+      final proKachel =
+          (constraints.maxHeight - luecken) / exercises.length;
+      final hoehe = math.min(proKachel, AppConstants.maxExerciseTileHeight);
+
+      return Column(
+        children: [
+          for (var i = 0; i < exercises.length; i++)
+            Padding(
+              key: ValueKey(exercises[i].id),
+              padding: EdgeInsets.only(
+                bottom:
+                    i < exercises.length - 1 ? AppConstants.spacingSm : 0,
+              ),
+              child: SizedBox(
+                height: hoehe,
+                child: buildTile(exercises[i]),
+              ),
+            ),
+        ],
+      );
+    },
+  );
+}
 
 class WorkoutScreen extends ConsumerStatefulWidget {
   final String? exerciseId;
@@ -35,21 +77,15 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
   // 2026-08-07 Bugfix: Reps liegen jetzt im app-weiten activeRepsProvider
   // (vorher Widget-State -> beim Verlassen des Screens verloren).
   Map<String, int> get _repsMap => ref.read(activeRepsProvider);
-  DateTime? _sessionStartTime;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Seed default exercises if empty
-      ref.read(exerciseNotifierProvider.notifier).seedDefaultExercisesIfEmpty();
+      ref.read(exerciseProvider.notifier).seedDefaultExercisesIfEmpty();
       // Timer starts via play button, not automatically
     });
-  }
-
-  void _toggleLockMode() {
-    HapticUtils.heavyTap();
-    toggleLockMode(ref);
   }
 
   /// Reps um [delta] ändern (negativ = abziehen).
@@ -65,26 +101,24 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
           _repsMap.values.every((r) => r == 0) || _repsMap.isEmpty;
       if (isFirstRep) {
         final workoutSettings = ref.read(workoutSettingsProvider).value;
-        final timerState = ref.read(timerProvider);
+        final timerState = ref.read(sessionTimerProvider);
         if (workoutSettings?.autoStartTimerOnFirstRep == true &&
             !timerState.isRunning &&
             timerState.elapsed == Duration.zero) {
-          ref.read(timerProvider.notifier).startStopwatch();
+          ref.read(sessionTimerProvider.notifier).startStopwatch();
         }
       }
     }
 
-    setState(() {
-      // Track session start on first rep
-      if (delta > 0) _sessionStartTime ??= DateTime.now();
-      ref.read(activeRepsProvider.notifier).addDelta(exerciseId, delta);
-    });
+    // Kein setState: `build` beobachtet `activeRepsProvider`, die Anzeige
+    // zieht dadurch von selbst nach. Ein zusaetzliches setState wuerde nur
+    // verschleiern, woher die Aktualisierung kommt.
+    if (delta > 0) ref.read(sessionStartProvider.notifier).startIfUnset();
+    ref.read(activeRepsProvider.notifier).addDelta(exerciseId, delta);
   }
 
   void _resetReps(String exerciseId) {
-    setState(() {
-      ref.read(activeRepsProvider.notifier).reset(exerciseId);
-    });
+    ref.read(activeRepsProvider.notifier).reset(exerciseId);
   }
 
   Future<void> _editExercise(Exercise exercise) async {
@@ -98,10 +132,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     if (action == EditExerciseAction.resetReps) {
       // Already handled by callback
     } else if (action == EditExerciseAction.deleted) {
-      // Remove from local reps map
-      setState(() {
-        ref.read(activeRepsProvider.notifier).remove(exercise.id);
-      });
+      ref.read(activeRepsProvider.notifier).remove(exercise.id);
     }
     // For updated: the stream will auto-refresh
   }
@@ -113,14 +144,17 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
   /// pausierten Zustand und braucht deshalb keine Rueckfrage mehr — als
   /// Netz dient ein "Rueckgaengig" in der Snackbar.
   Future<void> _endSession() async {
-    final timerState = ref.read(timerProvider);
+    final timerState = ref.read(sessionTimerProvider);
     final hasData = timerState.elapsed.inSeconds > 0 || _repsMap.isNotEmpty;
 
     // Zustand fuer das Rueckgaengig-Machen sichern, bevor er faellt.
     final previousReps = Map<String, int>.from(_repsMap);
     final previousElapsed = timerState.elapsed;
     final previousTarget = timerState.target;
-    final previousStart = _sessionStartTime;
+    final previousStart = ref.read(sessionStartProvider);
+    // Vor dem Leeren merken: danach steht der Zaehler wieder auf null.
+    final verdientePunkte =
+        previousReps.values.fold<int>(0, (summe, reps) => summe + reps);
 
     String? savedSessionId;
     if (hasData && _repsMap.values.any((reps) => reps > 0)) {
@@ -128,17 +162,21 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     }
 
     // Reset timer and reps
-    ref.read(timerProvider.notifier).reset();
-    setState(() {
-      ref.read(activeRepsProvider.notifier).clear();
-      _sessionStartTime = null;
-    });
+    ref.read(sessionTimerProvider.notifier).reset();
+    ref.read(activeRepsProvider.notifier).clear();
+    ref.read(sessionStartProvider.notifier).clear();
 
     if (!mounted) return;
 
     // Messenger vor der Navigation holen — danach ist dieser Screen weg.
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
+    // Und den Provider-Container gleich mit: die Meldung ueberlebt den
+    // Screen, ihr "Rueckgaengig" darf deshalb nicht ueber `ref` dieses
+    // Widgets laufen. Genau daran scheiterte es vorher lautlos — der
+    // Fehler landete im try/catch beim Loeschen und die Session blieb
+    // gespeichert.
+    final container = ProviderScope.containerOf(context, listen: false);
     context.go('/');
 
     if (!hasData) return;
@@ -150,7 +188,11 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
         duration: const Duration(seconds: 6),
         content: Text(
           savedSessionId != null
-              ? l10n.workoutSaved
+              // Die verdienten Punkte gleich mitnennen — sonst muesste man
+              // auf der Startseite nachrechnen, was das Training gebracht
+              // hat.
+              ? '${l10n.workoutSaved} · '
+                  '${l10n.gamificationPointsEarned(verdientePunkte)}'
               : l10n.workoutEnded,
           style: AppTypography.bodyMedium,
         ),
@@ -158,6 +200,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
           label: l10n.commonUndo,
           textColor: AppColors.primary,
           onPressed: () => _undoEndSession(
+            container,
             sessionId: savedSessionId,
             reps: previousReps,
             elapsed: previousElapsed,
@@ -171,32 +214,39 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
 
   /// Ein beendetes Workout zurueckholen: gespeicherte Session wieder
   /// loeschen, Reps und Timer-Stand wiederherstellen.
-  Future<void> _undoEndSession({
+  ///
+  /// Bekommt den Container ausdruecklich uebergeben und ist `static`, damit
+  /// hier gar nicht erst auf `ref` dieses Widgets zugegriffen werden kann —
+  /// das Widget ist zu diesem Zeitpunkt bereits weg.
+  static Future<void> _undoEndSession(
+    ProviderContainer container, {
     required String? sessionId,
     required Map<String, int> reps,
     required Duration elapsed,
     required Duration? target,
     required DateTime? startedAt,
   }) async {
+    // Zuerst das Zurueckholen, dann das Loeschen: schlaegt das Loeschen
+    // fehl, steht die Session wenigstens wieder da, wo sie war.
+    container.read(activeRepsProvider.notifier).restoreAll(reps);
+    container
+        .read(sessionTimerProvider.notifier)
+        .restore(elapsed: elapsed, target: target);
+    container.read(sessionStartProvider.notifier).restore(startedAt);
+
     if (sessionId != null) {
       try {
-        await ref
-            .read(sessionNotifierProvider.notifier)
+        await container
+            .read(sessionProvider.notifier)
             .deleteSession(sessionId);
       } catch (e) {
         debugPrint('Failed to undo session save: $e');
       }
     }
-
-    ref.read(activeRepsProvider.notifier).restoreAll(reps);
-    ref
-        .read(timerProvider.notifier)
-        .restore(elapsed: elapsed, target: target);
-    _sessionStartTime = startedAt;
   }
 
   Future<String?> _saveSession() async {
-    final timerState = ref.read(timerProvider);
+    final timerState = ref.read(sessionTimerProvider);
     final exercisesAsync = ref.read(exercisesStreamProvider);
     final exercises = exercisesAsync.value ?? [];
 
@@ -217,7 +267,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
 
     final session = SessionModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      startedAt: _sessionStartTime ?? DateTime.now(),
+      startedAt: ref.read(sessionStartProvider) ?? DateTime.now(),
       finishedAt: DateTime.now(),
       durationSeconds: timerState.elapsed.inSeconds,
       exerciseReps: repsWithData,
@@ -225,7 +275,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     );
 
     try {
-      await ref.read(sessionNotifierProvider.notifier).saveSession(session);
+      await ref.read(sessionProvider.notifier).saveSession(session);
       return session.id;
     } catch (e) {
       // Silently fail - don't block ending the session
@@ -234,239 +284,185 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     }
   }
 
-  Widget _buildExerciseTile(Exercise exercise, bool isLocked) {
+  Widget _buildExerciseTile(Exercise exercise) {
     return ExerciseTile(
+      // Ohne Schluessel haengt der Zustand einer Kachel an ihrer Position:
+      // wird eine Uebung geloescht, ruecken die folgenden auf und erben,
+      // ob die Kachel gerade aufgeklappt war.
+      key: ValueKey(exercise.id),
       exercise: exercise,
       currentReps: _repsMap[exercise.id] ?? 0,
-      isLocked: isLocked,
       onRepsDelta: (delta) => _changeReps(exercise.id, delta),
-      onLongPress: _toggleLockMode,
       onEdit: () => _editExercise(exercise),
+      onDelete: () => _deleteExercise(exercise),
+      // Auf- und zugeklappt wird im Provider gefuehrt, nicht in der
+      // Kachel: beim Blaettern verlaesst sie den Baum, ein Feld in ihr
+      // waere danach vergessen.
+      istOffen: ref.watch(openTilesProvider).contains(exercise.id),
+      onToggle: () =>
+          ref.read(openTilesProvider.notifier).umschalten(exercise.id),
     );
   }
 
-  Widget _buildExerciseLayout(List<Exercise> exercises, bool isLocked) {
-    // 1-4 exercises: vertical split (each takes equal space)
-    if (exercises.length <= 4) {
-      return Column(
-        children: exercises.asMap().entries.map((entry) {
-          final index = entry.key;
-          final exercise = entry.value;
-          return Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(
-                bottom: index < exercises.length - 1
-                    ? AppConstants.spacingSm
-                    : 0,
-              ),
-              child: _buildExerciseTile(exercise, isLocked),
-            ),
-          );
-        }).toList(),
-      );
+  /// Uebung loeschen — mit Rueckfrage, weil der Knopf jetzt direkt neben
+  /// den Zaehltasten sitzt.
+  Future<void> _deleteExercise(Exercise exercise) async {
+    if (!await zeigeLoeschRueckfrage(context, exercise)) return;
+
+    HapticUtils.heavyTap();
+    final erfolg = await ref
+        .read(exerciseProvider.notifier)
+        .deleteExercise(exercise.id);
+
+    if (erfolg) {
+      ref.read(activeRepsProvider.notifier).remove(exercise.id);
     }
+  }
 
-    // 5+ exercises: paginated view (4 per page) with arrow navigation
-    const exercisesPerPage = 4;
-    final pageCount = (exercises.length / exercisesPerPage).ceil();
-
-    return _PaginatedExerciseView(
+  Widget _buildExerciseLayout(List<Exercise> exercises) {
+    if (exercises.length <= AppConstants.maxExercisesPerPage) {
+      return buildTileLayout(exercises, _buildExerciseTile);
+    }
+    return _PagedExercises(
       exercises: exercises,
-      exercisesPerPage: exercisesPerPage,
-      pageCount: pageCount,
-      isLocked: isLocked,
       buildTile: _buildExerciseTile,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final isLocked = ref.watch(lockModeProvider);
     final exercisesAsync = ref.watch(exercisesStreamProvider);
     // 2026-08-07: Reps liegen im app-weiten Provider — hier BEOBACHTEN, damit die UI
     // bei Aenderungen neu baut. Vorher erledigte das setState(); darauf darf sich der
     // Screen nicht mehr verlassen, sonst haengt die Anzeige nach dem Zurueckkehren.
     ref.watch(activeRepsProvider);
 
-    return GestureDetector(
-      onLongPress: _toggleLockMode,
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: SafeArea(
-          child: Column(
-            children: [
-              // Lock Status Bar
-              _LockStatusBar(
-                isLocked: isLocked,
-                onBack: () => context.go('/'),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _WorkoutHeader(
+              onBack: () => context.go('/'),
+              onAddExercise: () => showAddExerciseModal(context),
+            ),
+
+            // Timer Section
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: AppConstants.spacingLg,
               ),
-
-              // Timer Section
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppConstants.spacingLg,
-                ),
-                child: Column(
-                  children: [
-                    const WorkoutTimer(),
-                    const SizedBox(height: AppConstants.spacingMd),
-                    TimerControls(
-                      onEndSession: _endSession,
-                      isLocked: isLocked,
-                    ),
-                  ],
-                ),
+              child: Column(
+                children: [
+                  const WorkoutTimer(),
+                  const SizedBox(height: AppConstants.spacingMd),
+                  TimerControls(onEndSession: _endSession),
+                ],
               ),
+            ),
 
-              // Exercise Tiles
-              Expanded(
-                child: exercisesAsync.when(
-                  data: (exercises) {
-                    if (exercises.isEmpty) {
-                      return _EmptyState(
-                        isLocked: isLocked,
-                        onAddExercise: () => showAddExerciseModal(context),
-                      );
-                    }
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppConstants.spacingMd,
-                      ),
-                      child: _buildExerciseLayout(exercises, isLocked),
+            // Exercise Tiles
+            Expanded(
+              child: exercisesAsync.when(
+                data: (exercises) {
+                  if (exercises.isEmpty) {
+                    return _EmptyState(
+                      onAddExercise: () => showAddExerciseModal(context),
                     );
-                  },
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                  error: (error, _) => Center(
-                    child: Text(AppLocalizations.of(context).commonError(error.toString())),
-                  ),
-                ),
-              ),
+                  }
 
-              // Quick Add Chips (only when unlocked)
-              if (!isLocked)
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppConstants.spacingMd,
-                  ),
-                  child: _QuickAddChips(
-                    onChipTap: (name, reps) => showAddExerciseModal(
-                      context,
-                      initialName: name,
-                      initialReps: reps,
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.spacingMd,
                     ),
-                  ),
+                    child: _buildExerciseLayout(exercises),
+                  );
+                },
+                loading: () => const Center(
+                  child: CircularProgressIndicator(),
                 ),
-
-              // Instructions
-              Padding(
-                padding: const EdgeInsets.all(AppConstants.spacingMd),
-                child: Text(
-                  isLocked ? 'Long press to unlock' : 'Long press to lock',
-                  style: AppTypography.labelSmall,
+                error: (error, _) => Center(
+                  child: Text(AppLocalizations.of(context)
+                      .commonError(error.toString())),
                 ),
               ),
-            ],
-          ),
+            ),
+
+            const SizedBox(height: AppConstants.spacingMd),
+          ],
         ),
-        floatingActionButton: !isLocked
-            ? FloatingActionButton(
-                onPressed: () => showAddExerciseModal(context),
-                child: const Icon(Icons.add_rounded),
-              )
-            : null,
       ),
     );
   }
 }
 
-class _LockStatusBar extends StatelessWidget {
-  final bool isLocked;
-  final VoidCallback? onBack;
+/// Kopfzeile des Workout-Screens: zurueck, Hinweis, Uebung hinzufuegen.
+///
+/// Ersetzt die frueherer Sperr-Statusleiste. Der Sperrmodus existierte, um
+/// im Training Fehleingaben zu verhindern — das erledigt jetzt die
+/// Kachel-Rueckseite: die Vorderseite ist eine reine Anzeige, jede Aktion
+/// sitzt eine Drehung tiefer.
+class _WorkoutHeader extends StatelessWidget {
+  final VoidCallback onBack;
+  final VoidCallback onAddExercise;
 
-  const _LockStatusBar({required this.isLocked, this.onBack});
+  const _WorkoutHeader({
+    required this.onBack,
+    required this.onAddExercise,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(
-        vertical: AppConstants.spacingSm,
-        horizontal: AppConstants.spacingMd,
+        vertical: AppConstants.spacingXs,
+        horizontal: AppConstants.spacingSm,
       ),
-      color: isLocked
-          ? AppColors.primary.withOpacity( 0.2)
-          : AppColors.secondary.withOpacity( 0.2),
+      color: AppColors.primary.withValues(alpha: 0.12),
       child: Row(
         children: [
-          // Back button (only in unlocked mode)
-          if (!isLocked && onBack != null)
-            GestureDetector(
-              onTap: onBack,
-              child: const Padding(
-                padding: EdgeInsets.only(right: 8),
-                child: Icon(
-                  Icons.arrow_back_rounded,
-                  color: AppColors.secondary,
-                  size: 20,
-                ),
-              ),
-            )
-          else
-            const SizedBox(width: 28),
-
-          // Center content
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      isLocked ? Icons.lock_rounded : Icons.lock_open_rounded,
-                      color: isLocked ? AppColors.primary : AppColors.secondary,
-                      size: 16,
-                    ),
-                    const SizedBox(width: AppConstants.spacingSm),
-                    Text(
-                      isLocked
-                          ? AppLocalizations.of(context).workoutLocked
-                          : AppLocalizations.of(context).workoutUnlocked,
-                      style: AppTypography.labelSmall.copyWith(
-                        color: isLocked ? AppColors.primary : AppColors.secondary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: AppConstants.spacingSm),
-                    Text(
-                      AppLocalizations.of(context).workoutLockHintGesture,
-                      style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.textSecondary,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ],
-                ),
-                if (isLocked)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Text(
-                      AppLocalizations.of(context).workoutTapHint,
-                      style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.textSecondary,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ),
-              ],
+          IconButton(
+            onPressed: onBack,
+            icon: const Icon(Icons.arrow_back_rounded, size: 22),
+            color: AppColors.textSecondary,
+            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+            constraints: const BoxConstraints(
+              minWidth: AppConstants.minTouchTargetSize,
+              minHeight: AppConstants.minTouchTargetSize,
             ),
           ),
-
-          // Spacer for symmetry
-          const SizedBox(width: 28),
+          Expanded(
+            child: Text(
+              l10n.workoutTapHint,
+              textAlign: TextAlign.center,
+              style: AppTypography.labelSmall.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: 10,
+              ),
+            ),
+          ),
+          // Mit Umrandung: ohne sie schwebte das Plus frei in der Kopfzeile
+          // und war als Schaltflaeche kaum zu erkennen.
+          IconButton(
+            onPressed: onAddExercise,
+            icon: const Icon(Icons.add_rounded, size: 24),
+            tooltip: l10n.workoutAddExercise,
+            style: IconButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+              side: BorderSide(color: AppColors.primary.withValues(alpha: 0.5)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppConstants.radiusSm),
+              ),
+              minimumSize: const Size(
+                AppConstants.minTouchTargetSize,
+                AppConstants.minTouchTargetSize,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -474,293 +470,174 @@ class _LockStatusBar extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  final bool isLocked;
   final VoidCallback onAddExercise;
 
   const _EmptyState({
-    required this.isLocked,
     required this.onAddExercise,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.fitness_center_rounded,
             size: 64,
             color: AppColors.textDisabled,
           ),
           const SizedBox(height: AppConstants.spacingMd),
           Text(
-            'No exercises yet',
+            l10n.exerciseEmptyTitle,
             style: AppTypography.headline3.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: AppConstants.spacingSm),
           Text(
-            isLocked
-                ? 'Long press to unlock and add exercises'
-                : 'Tap the + button to add an exercise',
+            l10n.exerciseEmptySubtitle,
             style: AppTypography.bodySmall,
             textAlign: TextAlign.center,
           ),
-          if (!isLocked) ...[
-            const SizedBox(height: AppConstants.spacingLg),
-            ElevatedButton.icon(
-              onPressed: onAddExercise,
-              icon: const Icon(Icons.add_rounded),
-              label: Text(AppLocalizations.of(context).workoutAddExercise),
-            ),
-          ],
+          const SizedBox(height: AppConstants.spacingLg),
+          ElevatedButton.icon(
+            onPressed: onAddExercise,
+            icon: const Icon(Icons.add_rounded),
+            label: Text(AppLocalizations.of(context).workoutAddExercise),
+          ),
         ],
       ),
     );
   }
 }
 
-/// Quick add chips for common exercises
-class _QuickAddChips extends ConsumerWidget {
-  final void Function(String name, int reps) onChipTap;
+// Die Schnellauswahl-Chips sind ins Hinzufuegen-Modal gewandert
+// (add_exercise_modal.dart). Frueher sassen sie unter den Kacheln und waren
+// nur im entsperrten Modus sichtbar — ohne diesen Modus kosten sie im
+// Workout-Screen nur Hoehe, im Modal stehen sie genau dort, wo man eine
+// Uebung aussucht.
 
-  const _QuickAddChips({required this.onChipTap});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final settingsAsync = ref.watch(quickChipSettingsProvider);
-    final existingExercises = ref.watch(exercisesProvider);
-
-    // Get names of existing exercises (case-insensitive)
-    final existingNames = existingExercises.maybeWhen(
-      data: (exercises) => exercises.map((e) => e.name.toLowerCase()).toSet(),
-      orElse: () => <String>{},
-    );
-
-    return settingsAsync.when(
-      data: (settings) {
-        // Filter out exercises that already exist
-        final availableExercises = settings.enabledExercises
-            .where((e) => !existingNames.contains(e.name.toLowerCase()))
-            .toList();
-
-        if (availableExercises.isEmpty) return const SizedBox.shrink();
-
-        return SizedBox(
-          height: 40,
-          child: ScrollConfiguration(
-            behavior: ScrollConfiguration.of(context).copyWith(
-              dragDevices: {
-                PointerDeviceKind.touch,
-                PointerDeviceKind.mouse,
-                PointerDeviceKind.trackpad,
-              },
-              scrollbars: true,
-            ),
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: availableExercises.length,
-              separatorBuilder: (_, __) => const SizedBox(width: AppConstants.spacingSm),
-              itemBuilder: (context, index) {
-                final exercise = availableExercises[index];
-                return ActionChip(
-                  avatar: Icon(
-                    exercise.icon,
-                    size: 16,
-                    color: AppColors.primary,
-                  ),
-                  label: Text(
-                    exercise.name,
-                    style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  backgroundColor: AppColors.surface,
-                  side: BorderSide(
-                    color: AppColors.primary.withOpacity( 0.3),
-                  ),
-                  onPressed: () => onChipTap(exercise.name, exercise.defaultReps),
-                );
-              },
-            ),
-          ),
-        );
-      },
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
-    );
-  }
-}
-
-/// Paginated view for 5+ exercises with smooth PageView swipe
-class _PaginatedExerciseView extends StatefulWidget {
+/// Blaettern, wenn zu viele Uebungen fuer eine Seite da sind.
+///
+/// Erst ab [AppConstants.maxExercisesPerPage] — bis dahin steht alles
+/// untereinander, denn Umblaettern mitten im Satz ist ein Griff zu viel.
+/// Darueber hinaus waeren die Kacheln aber so flach, dass auf der
+/// Rueckseite nichts mehr zu treffen ist; dann ist Blaettern das kleinere
+/// Uebel.
+class _PagedExercises extends StatefulWidget {
   final List<Exercise> exercises;
-  final int exercisesPerPage;
-  final int pageCount;
-  final bool isLocked;
-  final Widget Function(Exercise, bool) buildTile;
+  final Widget Function(Exercise) buildTile;
 
-  const _PaginatedExerciseView({
+  const _PagedExercises({
     required this.exercises,
-    required this.exercisesPerPage,
-    required this.pageCount,
-    required this.isLocked,
     required this.buildTile,
   });
 
   @override
-  State<_PaginatedExerciseView> createState() => _PaginatedExerciseViewState();
+  State<_PagedExercises> createState() => _PagedExercisesState();
 }
 
-class _PaginatedExerciseViewState extends State<_PaginatedExerciseView> {
-  late PageController _pageController;
-  int _currentPage = 0;
-  double _dragStartX = 0;
-  bool _isDragging = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
+class _PagedExercisesState extends State<_PagedExercises> {
+  late final PageController _controller = PageController();
+  int _seite = 0;
 
   @override
   void dispose() {
-    _pageController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
-  void _goToPage(int page) {
-    if (page >= 0 && page < widget.pageCount) {
-      _pageController.animateToPage(
-        page,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
-  }
+  int get _seitenzahl =>
+      (widget.exercises.length / AppConstants.maxExercisesPerPage).ceil();
 
-  void _onHorizontalDragStart(DragStartDetails details) {
-    _dragStartX = details.globalPosition.dx;
-    _isDragging = true;
-  }
-
-  void _onHorizontalDragUpdate(DragUpdateDetails details) {
-    if (!_isDragging) return;
-    final delta = details.globalPosition.dx - _dragStartX;
-    // Threshold of 50px for page change
-    if (delta.abs() > 50) {
-      if (delta > 0 && _currentPage > 0) {
-        _goToPage(_currentPage - 1);
-        _isDragging = false;
-      } else if (delta < 0 && _currentPage < widget.pageCount - 1) {
-        _goToPage(_currentPage + 1);
-        _isDragging = false;
-      }
-    }
-  }
-
-  void _onHorizontalDragEnd(DragEndDetails details) {
-    _isDragging = false;
-  }
-
-  Widget _buildPage(int pageIndex) {
-    final startIndex = pageIndex * widget.exercisesPerPage;
-    final endIndex = (startIndex + widget.exercisesPerPage)
-        .clamp(0, widget.exercises.length);
-    final pageExercises = widget.exercises.sublist(startIndex, endIndex);
-
-    return Column(
-      children: pageExercises.asMap().entries.map((entry) {
-        final index = entry.key;
-        final exercise = entry.value;
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: index < pageExercises.length - 1
-                  ? AppConstants.spacingSm
-                  : 0,
-            ),
-            child: widget.buildTile(exercise, widget.isLocked),
-          ),
-        );
-      }).toList(),
+  void _zuSeite(int seite) {
+    if (seite < 0 || seite >= _seitenzahl) return;
+    _controller.animateToPage(
+      seite,
+      duration: AppConstants.defaultAnimationDuration,
+      curve: Curves.easeInOut,
     );
+  }
+
+  List<Exercise> _uebungenDerSeite(int seite) {
+    const proSeite = AppConstants.maxExercisesPerPage;
+    final von = seite * proSeite;
+    final bis = math.min(von + proSeite, widget.exercises.length);
+    return widget.exercises.sublist(von, bis);
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Navigation row with arrows and page indicator
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Previous button
-            IconButton(
-              onPressed: _currentPage > 0
-                  ? () => _goToPage(_currentPage - 1)
-                  : null,
-              icon: const Icon(Icons.chevron_left_rounded),
-              color: AppColors.primary,
-              disabledColor: AppColors.textDisabled,
+        Expanded(
+          child: PageView.builder(
+            controller: _controller,
+            // Wischen wechselt die Seite. Die Kacheln reagieren nur noch
+            // auf Tippen, damit sich die beiden Gesten nicht mehr im Weg
+            // stehen.
+            itemCount: _seitenzahl,
+            onPageChanged: (seite) => setState(() => _seite = seite),
+            itemBuilder: (context, seite) => buildTileLayout(
+              _uebungenDerSeite(seite),
+              widget.buildTile,
             ),
-
-            // Page indicator dots
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(widget.pageCount, (index) {
-                return GestureDetector(
-                  onTap: () => _goToPage(index),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: _currentPage == index ? 24 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: _currentPage == index
-                          ? AppColors.primary
-                          : AppColors.textDisabled,
-                      borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: AppConstants.spacingXs),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                onPressed: _seite > 0 ? () => _zuSeite(_seite - 1) : null,
+                icon: const Icon(Icons.chevron_left_rounded),
+                color: AppColors.primary,
+                disabledColor: AppColors.textDisabled,
+                visualDensity: VisualDensity.compact,
+              ),
+              // Punkte sind ebenfalls antippbar — bei zwei oder drei Seiten
+              // ist das der kuerzeste Weg.
+              for (var i = 0; i < _seitenzahl; i++)
+                GestureDetector(
+                  onTap: () => _zuSeite(i),
+                  child: Padding(
+                    // Grosszuegig gepolstert: der Punkt selbst waere ein zu
+                    // kleines Ziel.
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 12,
+                    ),
+                    child: AnimatedContainer(
+                      duration: AppConstants.quickAnimationDuration,
+                      width: i == _seite ? 20 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: i == _seite
+                            ? AppColors.primary
+                            : AppColors.textDisabled,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   ),
-                );
-              }),
-            ),
-
-            // Next button
-            IconButton(
-              onPressed: _currentPage < widget.pageCount - 1
-                  ? () => _goToPage(_currentPage + 1)
-                  : null,
-              icon: const Icon(Icons.chevron_right_rounded),
-              color: AppColors.primary,
-              disabledColor: AppColors.textDisabled,
-            ),
-          ],
-        ),
-
-        // PageView with gesture detection for better web support
-        Expanded(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onHorizontalDragStart: _onHorizontalDragStart,
-            onHorizontalDragUpdate: _onHorizontalDragUpdate,
-            onHorizontalDragEnd: _onHorizontalDragEnd,
-            child: PageView.builder(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: widget.pageCount,
-              onPageChanged: (page) {
-                setState(() => _currentPage = page);
-              },
-              itemBuilder: (context, index) => _buildPage(index),
-            ),
+                ),
+              IconButton(
+                onPressed: _seite < _seitenzahl - 1
+                    ? () => _zuSeite(_seite + 1)
+                    : null,
+                icon: const Icon(Icons.chevron_right_rounded),
+                color: AppColors.primary,
+                disabledColor: AppColors.textDisabled,
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 }
+
