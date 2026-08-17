@@ -34,7 +34,9 @@ class ChallengesListScreen extends ConsumerWidget {
         child: challengesAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => Center(
-            child: Text(AppLocalizations.of(context).commonError(error.toString()), style: AppTypography.bodyMedium),
+            child: Text(
+                AppLocalizations.of(context).commonError(error.toString()),
+                style: AppTypography.bodyMedium),
           ),
           data: (challenges) {
             if (challenges.isEmpty) {
@@ -42,7 +44,7 @@ class ChallengesListScreen extends ConsumerWidget {
                 onCreate: () => showAddChallengeModal(context),
                 onTemplate: () async {
                   final challenge = await ref
-                      .read(challengeNotifierProvider.notifier)
+                      .read(challengeProvider.notifier)
                       .createCalisthenicsTemplate();
                   if (challenge != null && context.mounted) {
                     context.push('/challenges/${challenge.id}');
@@ -89,7 +91,8 @@ class ChallengesListScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: Text(AppLocalizations.of(context).challengeDeleteTitle, style: AppTypography.headline3),
+        title: Text(AppLocalizations.of(context).challengeDeleteTitle,
+            style: AppTypography.headline3),
         content: Text(
           '"${challenge.name}" wird endgültig entfernt.',
           style: AppTypography.bodyMedium,
@@ -109,7 +112,7 @@ class ChallengesListScreen extends ConsumerWidget {
     );
     if (confirmed == true) {
       await ref
-          .read(challengeNotifierProvider.notifier)
+          .read(challengeProvider.notifier)
           .deleteChallenge(challenge.id);
     }
   }
@@ -142,7 +145,7 @@ class _ChallengeCard extends StatelessWidget {
           border: Border.all(
             color: challenge.isComplete
                 ? AppColors.primary
-                : AppColors.primary.withOpacity(0.3),
+                : AppColors.primary.withValues(alpha: 0.3),
             width: challenge.isComplete ? 2 : 1,
           ),
         ),
@@ -173,8 +176,12 @@ class _ChallengeCard extends StatelessWidget {
                     if (value == 'delete') onDelete();
                   },
                   itemBuilder: (_) => [
-                    PopupMenuItem(value: 'edit', child: Text(AppLocalizations.of(context).commonEdit)),
-                    PopupMenuItem(value: 'delete', child: Text(AppLocalizations.of(context).commonDelete)),
+                    PopupMenuItem(
+                        value: 'edit',
+                        child: Text(AppLocalizations.of(context).commonEdit)),
+                    PopupMenuItem(
+                        value: 'delete',
+                        child: Text(AppLocalizations.of(context).commonDelete)),
                   ],
                 ),
               ],

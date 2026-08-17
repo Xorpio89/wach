@@ -125,7 +125,8 @@ class _AddChallengeModalState extends ConsumerState<AddChallengeModal> {
 
     if (items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).challengeNeedsExercise)),
+        SnackBar(
+            content: Text(AppLocalizations.of(context).challengeNeedsExercise)),
       );
       return;
     }
@@ -133,7 +134,7 @@ class _AddChallengeModalState extends ConsumerState<AddChallengeModal> {
     setState(() => _isLoading = true);
     HapticUtils.lightTap();
 
-    final notifier = ref.read(challengeNotifierProvider.notifier);
+    final notifier = ref.read(challengeProvider.notifier);
     final periodDays = int.tryParse(_periodController.text.trim());
 
     if (_isEdit) {
@@ -213,7 +214,8 @@ class _AddChallengeModalState extends ConsumerState<AddChallengeModal> {
                       textInputAction: TextInputAction.next,
                       style: AppTypography.bodyLarge,
                       decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context).challengeNameHint,
+                        hintText:
+                            AppLocalizations.of(context).challengeNameHint,
                         prefixIcon: Icon(Icons.emoji_events_rounded),
                       ),
                       validator: (value) {
@@ -230,12 +232,14 @@ class _AddChallengeModalState extends ConsumerState<AddChallengeModal> {
                       textInputAction: TextInputAction.next,
                       style: AppTypography.bodyLarge,
                       decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context).challengePeriodHint,
+                        hintText:
+                            AppLocalizations.of(context).challengePeriodHint,
                         prefixIcon: Icon(Icons.calendar_today_rounded),
                       ),
                     ),
                     const SizedBox(height: AppConstants.spacingLg),
-                    Text(AppLocalizations.of(context).challengeExercises, style: AppTypography.labelLarge),
+                    Text(AppLocalizations.of(context).challengeExercises,
+                        style: AppTypography.labelLarge),
                     const SizedBox(height: AppConstants.spacingSm),
                     ..._items.map(_buildItemRow),
                     const SizedBox(height: AppConstants.spacingSm),
@@ -289,7 +293,8 @@ class _AddChallengeModalState extends ConsumerState<AddChallengeModal> {
               controller: draft.name,
               textCapitalization: TextCapitalization.words,
               style: AppTypography.bodyMedium,
-              decoration: InputDecoration(hintText: AppLocalizations.of(context).challengeExerciseHint),
+              decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context).challengeExerciseHint),
             ),
           ),
           const SizedBox(width: AppConstants.spacingSm),
@@ -299,7 +304,8 @@ class _AddChallengeModalState extends ConsumerState<AddChallengeModal> {
               controller: draft.target,
               keyboardType: TextInputType.number,
               style: AppTypography.bodyMedium,
-              decoration: InputDecoration(hintText: AppLocalizations.of(context).challengeGoalHint),
+              decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context).challengeGoalHint),
             ),
           ),
           const SizedBox(width: AppConstants.spacingSm),
@@ -309,7 +315,8 @@ class _AddChallengeModalState extends ConsumerState<AddChallengeModal> {
               controller: draft.block,
               keyboardType: TextInputType.number,
               style: AppTypography.bodyMedium,
-              decoration: InputDecoration(hintText: AppLocalizations.of(context).challengeBlockHint),
+              decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context).challengeBlockHint),
             ),
           ),
           IconButton(

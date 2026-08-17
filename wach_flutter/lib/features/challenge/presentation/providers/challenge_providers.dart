@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../exercise/presentation/providers/exercise_providers.dart'
@@ -8,35 +8,38 @@ import '../../data/repositories/challenge_repository_impl.dart';
 import '../../domain/entities/challenge.dart';
 import '../../domain/repositories/challenge_repository.dart';
 
+part 'challenge_providers.g.dart';
+
 /// Challenge Local DataSource Provider
-final challengeLocalDataSourceProvider =
-    Provider<ChallengeLocalDataSource>((ref) {
-  final dbService = ref.watch(databaseServiceProvider);
-  return ChallengeLocalDataSource(dbService);
-});
+@Riverpod(keepAlive: true)
+ChallengeLocalDataSource challengeLocalDataSource(
+  Ref ref,
+) {
+  return ChallengeLocalDataSource(ref.watch(databaseServiceProvider));
+}
 
 /// Challenge Repository Provider
-final challengeRepositoryProvider = Provider<ChallengeRepository>((ref) {
-  final dataSource = ref.watch(challengeLocalDataSourceProvider);
-  return ChallengeRepositoryImpl(dataSource);
-});
+@Riverpod(keepAlive: true)
+ChallengeRepository challengeRepository(Ref ref) {
+  return ChallengeRepositoryImpl(ref.watch(challengeLocalDataSourceProvider));
+}
 
 /// All Challenges Provider
-final challengesProvider = FutureProvider<List<Challenge>>((ref) async {
-  final repository = ref.watch(challengeRepositoryProvider);
-  return repository.getAll();
-});
+@Riverpod(keepAlive: true)
+Future<List<Challenge>> challenges(Ref ref) {
+  return ref.watch(challengeRepositoryProvider).getAll();
+}
 
 /// Single Challenge Provider (by id)
-final challengeByIdProvider =
-    FutureProvider.family<Challenge?, String>((ref, id) async {
-  final repository = ref.watch(challengeRepositoryProvider);
-  return repository.getById(id);
-});
+@Riverpod(keepAlive: true)
+Future<Challenge?> challengeById(Ref ref, String id) {
+  return ref.watch(challengeRepositoryProvider).getById(id);
+}
 
 /// Challenge Notifier for CRUD + progress operations.
 /// State is a simple `isLoading` flag.
-class ChallengeNotifier extends Notifier<bool> {
+@Riverpod(keepAlive: true)
+class ChallengeNotifier extends _$ChallengeNotifier {
   final Uuid _uuid = const Uuid();
 
   @override
@@ -116,6 +119,3 @@ class ChallengeNotifier extends Notifier<bool> {
     if (id != null) ref.invalidate(challengeByIdProvider(id));
   }
 }
-
-final challengeNotifierProvider =
-    NotifierProvider<ChallengeNotifier, bool>(ChallengeNotifier.new);

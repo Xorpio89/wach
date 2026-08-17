@@ -35,7 +35,7 @@ class StatusBar extends StatelessWidget {
         vertical: AppConstants.spacingSm,
         horizontal: AppConstants.spacingMd,
       ),
-      color: statusColor.withOpacity( 0.2),
+      color: statusColor.withValues(alpha: 0.2),
       child: Row(
         children: [
           if (leading != null) leading! else const SizedBox(width: 28),

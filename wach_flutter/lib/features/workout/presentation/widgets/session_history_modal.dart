@@ -30,7 +30,7 @@ class _SessionHistoryModal extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sessionsAsync = ref.watch(sessionNotifierProvider);
+    final sessionsAsync = ref.watch(sessionProvider);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
@@ -127,8 +127,7 @@ class _SessionHistoryModal extends ConsumerWidget {
                               title: Text(AppLocalizations.of(context)
                                   .sessionDeleteTitle),
                               content: Text(
-                                AppLocalizations.of(context)
-                                    .sessionDeleteBody,
+                                AppLocalizations.of(context).sessionDeleteBody,
                               ),
                               actions: [
                                 TextButton(
@@ -150,7 +149,7 @@ class _SessionHistoryModal extends ConsumerWidget {
 
                           if (confirm == true) {
                             await ref
-                                .read(sessionNotifierProvider.notifier)
+                                .read(sessionProvider.notifier)
                                 .deleteSession(sessions[index].id);
                           }
                         },
@@ -163,8 +162,7 @@ class _SessionHistoryModal extends ConsumerWidget {
                 ),
                 error: (error, _) => Center(
                   child: Text(
-                    AppLocalizations.of(context)
-                        .commonError(error.toString()),
+                    AppLocalizations.of(context).commonError(error.toString()),
                   ),
                 ),
               ),
@@ -296,7 +294,7 @@ class _SessionCard extends StatelessWidget {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity( 0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(

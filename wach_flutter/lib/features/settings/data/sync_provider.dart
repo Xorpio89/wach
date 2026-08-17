@@ -1,11 +1,13 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sembast/sembast.dart';
 
 import '../../../core/database/database_service.dart';
 import '../../../core/services/google_drive_service.dart';
 import '../../exercise/presentation/providers/exercise_providers.dart';
 import '../../workout/presentation/providers/session_providers.dart';
+
+part 'sync_provider.g.dart';
 
 /// Sync state
 class SyncState {
@@ -51,7 +53,8 @@ class SyncState {
 }
 
 /// Sync notifier
-class SyncNotifier extends Notifier<SyncState> {
+@Riverpod(keepAlive: true)
+class SyncNotifier extends _$SyncNotifier {
   GoogleDriveService? _driveService;
 
   GoogleDriveService get driveService {
@@ -104,9 +107,8 @@ class SyncNotifier extends Notifier<SyncState> {
     try {
       final dbService = ref.read(databaseServiceProvider);
       final db = await dbService.database;
-      final record = await DatabaseService.settingsStore
-          .record('sync_settings')
-          .get(db);
+      final record =
+          await DatabaseService.settingsStore.record('sync_settings').get(db);
       return record ?? {};
     } catch (e) {
       return {};
@@ -194,7 +196,7 @@ class SyncNotifier extends Notifier<SyncState> {
 
     try {
       // Get local sessions
-      final sessionNotifier = ref.read(sessionNotifierProvider.notifier);
+      final sessionNotifier = ref.read(sessionProvider.notifier);
       final localSessions = await sessionNotifier.getAllSessions();
 
       // Upload to Drive
@@ -244,7 +246,7 @@ class SyncNotifier extends Notifier<SyncState> {
         );
       }
 
-      final sessionNotifier = ref.read(sessionNotifierProvider.notifier);
+      final sessionNotifier = ref.read(sessionProvider.notifier);
 
       if (merge) {
         // Merge: add cloud sessions that don't exist locally
@@ -274,7 +276,7 @@ class SyncNotifier extends Notifier<SyncState> {
         }
 
         // Refresh providers
-        ref.invalidate(sessionNotifierProvider);
+        ref.invalidate(sessionProvider);
 
         state = state.copyWith(isSyncing: false);
         return RestoreResult(
@@ -314,6 +316,3 @@ class RestoreResult {
 }
 
 /// Sync provider
-final syncProvider = NotifierProvider<SyncNotifier, SyncState>(
-  SyncNotifier.new,
-);

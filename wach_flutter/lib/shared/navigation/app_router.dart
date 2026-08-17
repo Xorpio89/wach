@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/battle/presentation/screens/battle_screen.dart';
@@ -10,8 +10,11 @@ import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/workout/presentation/screens/workout_screen.dart';
 
+part 'app_router.g.dart';
+
 /// App Router Provider
-final appRouterProvider = Provider<GoRouter>((ref) {
+@Riverpod(keepAlive: true)
+GoRouter appRouter(Ref ref) {
   return GoRouter(
     initialLocation: '/',
     routes: [
@@ -67,7 +70,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
     ),
   );
-});
+}
 
 /// Route Names for type-safe navigation
 abstract final class Routes {

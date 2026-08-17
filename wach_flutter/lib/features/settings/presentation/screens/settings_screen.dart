@@ -315,7 +315,7 @@ class _AutoStartTimerSetting extends ConsumerWidget {
           onChanged: (value) {
             ref.read(workoutSettingsProvider.notifier).setAutoStartTimer(value);
           },
-          activeTrackColor: AppColors.primary.withOpacity(0.5),
+          activeTrackColor: AppColors.primary.withValues(alpha: 0.5),
         ),
       ),
       loading: () => _SettingsTile(
@@ -358,29 +358,36 @@ class _QuickChipsSettings extends ConsumerWidget {
                 spacing: AppConstants.spacingSm,
                 runSpacing: AppConstants.spacingSm,
                 children: allQuickChipExercises.map((exercise) {
-                  final isEnabled = settings.enabledChips.contains(exercise.name);
+                  final isEnabled =
+                      settings.enabledChips.contains(exercise.name);
                   return FilterChip(
                     avatar: Icon(
                       exercise.icon,
                       size: 16,
-                      color: isEnabled ? AppColors.primary : AppColors.textSecondary,
+                      color: isEnabled
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
                     ),
                     label: Text(
                       exercise.name,
                       style: AppTypography.labelSmall.copyWith(
-                        color: isEnabled ? AppColors.textPrimary : AppColors.textSecondary,
+                        color: isEnabled
+                            ? AppColors.textPrimary
+                            : AppColors.textSecondary,
                       ),
                     ),
                     selected: isEnabled,
                     onSelected: (_) {
-                      ref.read(quickChipSettingsProvider.notifier).toggleChip(exercise.name);
+                      ref
+                          .read(quickChipSettingsProvider.notifier)
+                          .toggleChip(exercise.name);
                     },
                     backgroundColor: AppColors.background,
-                    selectedColor: AppColors.primary.withOpacity( 0.2),
+                    selectedColor: AppColors.primary.withValues(alpha: 0.2),
                     checkmarkColor: AppColors.primary,
                     side: BorderSide(
                       color: isEnabled
-                          ? AppColors.primary.withOpacity( 0.5)
+                          ? AppColors.primary.withValues(alpha: 0.5)
                           : AppColors.surfaceVariant,
                     ),
                   );
@@ -396,7 +403,9 @@ class _QuickChipsSettings extends ConsumerWidget {
             children: [
               TextButton(
                 onPressed: () {
-                  ref.read(quickChipSettingsProvider.notifier).resetToDefaults();
+                  ref
+                      .read(quickChipSettingsProvider.notifier)
+                      .resetToDefaults();
                 },
                 child: Text(l10n.commonReset),
               ),
@@ -561,7 +570,7 @@ class _CloudSyncSettings extends ConsumerWidget {
                       await ref.read(syncProvider.notifier).disableSync();
                     }
                   },
-                  activeTrackColor: AppColors.primary.withOpacity(0.5),
+                  activeTrackColor: AppColors.primary.withValues(alpha: 0.5),
                 ),
             ],
           ),
@@ -657,7 +666,6 @@ class _CloudSyncSettings extends ConsumerWidget {
   }
 }
 
-
 /// Sprachumschalter (Deutsch / Englisch).
 ///
 /// Die Sprachnamen stehen bewusst in der jeweiligen Sprache selbst —
@@ -708,7 +716,7 @@ class _LanguageSetting extends ConsumerWidget {
             style: SegmentedButton.styleFrom(
               backgroundColor: AppColors.background,
               foregroundColor: AppColors.textSecondary,
-              selectedBackgroundColor: AppColors.primary.withOpacity(0.2),
+              selectedBackgroundColor: AppColors.primary.withValues(alpha: 0.2),
               selectedForegroundColor: AppColors.primary,
               textStyle: AppTypography.labelSmall,
             ),

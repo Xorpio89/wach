@@ -18,8 +18,7 @@ class SessionModel {
   });
 
   /// Total reps across all exercises
-  int get totalReps =>
-      exerciseReps.values.fold(0, (sum, reps) => sum + reps);
+  int get totalReps => exerciseReps.values.fold(0, (sum, reps) => sum + reps);
 
   /// Duration as Duration object
   Duration get duration => Duration(seconds: durationSeconds);

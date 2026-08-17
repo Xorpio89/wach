@@ -37,9 +37,8 @@ class ChallengeBoxGrid extends StatelessWidget {
         final upper = ((i + 1) * item.blockSize).clamp(0, item.targetReps);
         final isFull = item.doneReps >= upper;
         final isPartial = !isFull && item.doneReps > lower;
-        final label = isPartial
-            ? '${item.doneReps - lower}'
-            : '${upper - lower}';
+        final label =
+            isPartial ? '${item.doneReps - lower}' : '${upper - lower}';
 
         return GestureDetector(
           onTap: () {
@@ -54,15 +53,13 @@ class ChallengeBoxGrid extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: isFull
-                  ? color.withOpacity(0.85)
+                  ? color.withValues(alpha: 0.85)
                   : isPartial
-                      ? color.withOpacity(0.30)
+                      ? color.withValues(alpha: 0.30)
                       : AppColors.surfaceVariant,
               borderRadius: BorderRadius.circular(AppConstants.radiusSm),
               border: Border.all(
-                color: (isFull || isPartial)
-                    ? color
-                    : color.withOpacity(0.35),
+                color: (isFull || isPartial) ? color : color.withValues(alpha: 0.35),
                 width: 1,
               ),
             ),

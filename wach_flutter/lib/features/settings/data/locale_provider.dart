@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 // get()/put() auf RecordRef kommen als Extension aus sembast.
 import 'package:sembast/sembast.dart';
 
 import '../../../core/database/database_service.dart';
+
+part 'locale_provider.g.dart';
 
 /// Von der App unterstuetzte Sprachen.
 ///
@@ -20,7 +22,8 @@ const supportedLocales = [
 /// Der Wert wird synchron mit Deutsch initialisiert und danach aus der
 /// Datenbank nachgeladen — so rendert der erste Frame nie in der
 /// falschen Sprache und blockiert trotzdem nicht auf der DB.
-class LocaleNotifier extends Notifier<Locale> {
+@Riverpod(keepAlive: true)
+class LocaleNotifier extends _$LocaleNotifier {
   static const _recordKey = 'app_locale';
 
   @override
@@ -37,9 +40,8 @@ class LocaleNotifier extends Notifier<Locale> {
       final code = record?['languageCode'] as String?;
       if (code == null) return;
 
-      final match = supportedLocales
-          .where((l) => l.languageCode == code)
-          .firstOrNull;
+      final match =
+          supportedLocales.where((l) => l.languageCode == code).firstOrNull;
       if (match != null) state = match;
     } catch (e) {
       debugPrint('[Locale] Laden fehlgeschlagen: $e');
@@ -60,6 +62,3 @@ class LocaleNotifier extends Notifier<Locale> {
   }
 }
 
-final localeProvider = NotifierProvider<LocaleNotifier, Locale>(
-  LocaleNotifier.new,
-);
