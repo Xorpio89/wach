@@ -1,8 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/entities/battle.dart';
+
+part 'battle_provider.g.dart';
 
 enum BattlePhase { setup, running, finished }
 
@@ -81,7 +83,8 @@ class BattleState {
   }
 }
 
-class BattleNotifier extends Notifier<BattleState> {
+@Riverpod(keepAlive: true)
+class BattleNotifier extends _$BattleNotifier {
   Timer? _ticker;
 
   @override
@@ -212,5 +215,4 @@ class BattleNotifier extends Notifier<BattleState> {
   }
 }
 
-final battleProvider =
-    NotifierProvider<BattleNotifier, BattleState>(BattleNotifier.new);
+

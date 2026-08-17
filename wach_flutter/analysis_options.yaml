@@ -9,6 +9,25 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
+  plugins:
+    # Prueft die Riverpod-Regeln bereits beim Analysieren: falsch
+    # eingesetztes `watch`/`read`, fehlende Abhaengigkeiten und aehnliche
+    # Fehler, die sonst erst zur Laufzeit auffallen.
+    - custom_lint
+  # Erzeugter Code wird bewusst NICHT ausgeschlossen: sonst bleiben
+  # Namenskonflikte zwischen Hand- und Generatorcode unentdeckt, bis der
+  # Compiler sie meldet. Die erzeugten Dateien bringen selbst passende
+  # `ignore_for_file`-Angaben mit.
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`

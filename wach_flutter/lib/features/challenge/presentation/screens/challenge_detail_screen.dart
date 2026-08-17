@@ -50,7 +50,9 @@ class ChallengeDetailScreen extends ConsumerWidget {
         child: challengeAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => Center(
-            child: Text(AppLocalizations.of(context).commonError(error.toString()), style: AppTypography.bodyMedium),
+            child: Text(
+                AppLocalizations.of(context).commonError(error.toString()),
+                style: AppTypography.bodyMedium),
           ),
           data: (challenge) {
             if (challenge == null) {
@@ -99,7 +101,7 @@ class _ChallengeHeader extends StatelessWidget {
         border: Border.all(
           color: challenge.isComplete
               ? AppColors.primary
-              : AppColors.primary.withOpacity(0.3),
+              : AppColors.primary.withValues(alpha: 0.3),
           width: challenge.isComplete ? 2 : 1,
         ),
       ),
@@ -134,17 +136,20 @@ class _ChallengeItemSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(challengeNotifierProvider.notifier);
+    final notifier = ref.read(challengeProvider.notifier);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Container(width: 10, height: 10, decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(3),
-            )),
+            Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(3),
+                )),
             const SizedBox(width: AppConstants.spacingSm),
             Expanded(
               child: Text(item.name, style: AppTypography.headline3),
@@ -209,7 +214,7 @@ class _ChallengeItemSection extends ConsumerWidget {
     if (reps != null && reps != 0) {
       HapticUtils.selection();
       await ref
-          .read(challengeNotifierProvider.notifier)
+          .read(challengeProvider.notifier)
           .addReps(challenge, item.id, reps);
     }
   }

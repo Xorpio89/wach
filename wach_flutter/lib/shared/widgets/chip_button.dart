@@ -27,9 +27,7 @@ class ChipButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected
-              ? color.withOpacity( 0.2)
-              : AppColors.surfaceVariant,
+          color: isSelected ? color.withValues(alpha: 0.2) : AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
             color: isSelected ? color : AppColors.surfaceVariant,

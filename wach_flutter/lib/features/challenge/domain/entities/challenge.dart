@@ -21,8 +21,7 @@ class ChallengeItem {
   });
 
   /// Number of boxes to display (each box represents [blockSize] reps).
-  int get blockCount =>
-      blockSize <= 0 ? 0 : (targetReps / blockSize).ceil();
+  int get blockCount => blockSize <= 0 ? 0 : (targetReps / blockSize).ceil();
 
   /// Reps still missing to reach the target.
   int get remaining => (targetReps - doneReps).clamp(0, targetReps);
@@ -66,8 +65,7 @@ class Challenge {
     this.items = const [],
   });
 
-  int get totalTarget =>
-      items.fold(0, (sum, item) => sum + item.targetReps);
+  int get totalTarget => items.fold(0, (sum, item) => sum + item.targetReps);
 
   int get totalDone => items.fold(0, (sum, item) => sum + item.doneReps);
 
@@ -103,5 +101,6 @@ class Challenge {
   int get hashCode => id.hashCode;
 
   @override
-  String toString() => 'Challenge(id: $id, name: $name, items: ${items.length})';
+  String toString() =>
+      'Challenge(id: $id, name: $name, items: ${items.length})';
 }

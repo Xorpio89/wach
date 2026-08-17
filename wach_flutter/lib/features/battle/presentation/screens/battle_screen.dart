@@ -146,7 +146,8 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
     }
     if (stages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).challengeNeedsExercise)),
+        SnackBar(
+            content: Text(AppLocalizations.of(context).challengeNeedsExercise)),
       );
       return;
     }
@@ -156,9 +157,8 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
       _p2.text.trim().isEmpty ? 'Spieler 2' : _p2.text.trim(),
     ];
     final capMin = double.tryParse(_capMin.text.trim().replaceAll(',', '.'));
-    final capMs = (capMin != null && capMin > 0)
-        ? (capMin * 60 * 1000).round()
-        : null;
+    final capMs =
+        (capMin != null && capMin > 0) ? (capMin * 60 * 1000).round() : null;
 
     HapticUtils.heavyTap();
     ref.read(battleProvider.notifier).configure(
@@ -174,7 +174,8 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
     return ListView(
       padding: const EdgeInsets.all(AppConstants.spacingMd),
       children: [
-        Text(AppLocalizations.of(context).battleSameDevice, style: AppTypography.headline2),
+        Text(AppLocalizations.of(context).battleSameDevice,
+            style: AppTypography.headline2),
         const SizedBox(height: AppConstants.spacingXs),
         Text(
           'Zwei Spieler, ein Gerät. Nacheinander gegen die Uhr — '
@@ -184,7 +185,8 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
         const SizedBox(height: AppConstants.spacingLg),
 
         // Presets
-        Text(AppLocalizations.of(context).battleTemplateLabel, style: AppTypography.labelLarge),
+        Text(AppLocalizations.of(context).battleTemplateLabel,
+            style: AppTypography.labelLarge),
         const SizedBox(height: AppConstants.spacingSm),
         Wrap(
           spacing: AppConstants.spacingSm,
@@ -205,7 +207,8 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
         const SizedBox(height: AppConstants.spacingLg),
 
         // Players
-        Text(AppLocalizations.of(context).battlePlayers, style: AppTypography.labelLarge),
+        Text(AppLocalizations.of(context).battlePlayers,
+            style: AppTypography.labelLarge),
         const SizedBox(height: AppConstants.spacingSm),
         Row(
           children: [
@@ -213,7 +216,8 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
               child: TextField(
                 controller: _p1,
                 style: AppTypography.bodyMedium,
-                decoration: InputDecoration(hintText: AppLocalizations.of(context).battlePlayer1Hint),
+                decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context).battlePlayer1Hint),
               ),
             ),
             const SizedBox(width: AppConstants.spacingMd),
@@ -221,7 +225,8 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
               child: TextField(
                 controller: _p2,
                 style: AppTypography.bodyMedium,
-                decoration: InputDecoration(hintText: AppLocalizations.of(context).battlePlayer2Hint),
+                decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context).battlePlayer2Hint),
               ),
             ),
           ],
@@ -232,8 +237,10 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(AppLocalizations.of(context).battleTask(_title), style: AppTypography.labelLarge),
-            Text(AppLocalizations.of(context).battleOrderMatters, style: AppTypography.labelSmall),
+            Text(AppLocalizations.of(context).battleTask(_title),
+                style: AppTypography.labelLarge),
+            Text(AppLocalizations.of(context).battleOrderMatters,
+                style: AppTypography.labelSmall),
           ],
         ),
         const SizedBox(height: AppConstants.spacingSm),
@@ -246,7 +253,7 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
               children: [
                 CircleAvatar(
                   radius: 12,
-                  backgroundColor: AppColors.primary.withOpacity(0.2),
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.2),
                   child: Text('${index + 1}',
                       style: AppTypography.labelSmall
                           .copyWith(color: AppColors.primary)),
@@ -257,7 +264,8 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
                   child: TextField(
                     controller: draft.exercise,
                     style: AppTypography.bodyMedium,
-                    decoration: InputDecoration(hintText: AppLocalizations.of(context).commonExercise),
+                    decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context).commonExercise),
                   ),
                 ),
                 const SizedBox(width: AppConstants.spacingSm),
@@ -267,7 +275,8 @@ class _BattleSetupState extends ConsumerState<_BattleSetup> {
                     controller: draft.target,
                     keyboardType: TextInputType.number,
                     style: AppTypography.bodyMedium,
-                    decoration: InputDecoration(hintText: AppLocalizations.of(context).commonReps),
+                    decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context).commonReps),
                   ),
                 ),
                 IconButton(
@@ -388,7 +397,7 @@ class _BattleRun extends ConsumerWidget {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.15),
+                  color: AppColors.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(AppConstants.radiusXl),
                   border: Border.all(color: AppColors.primary, width: 2),
                 ),
@@ -456,7 +465,8 @@ class _BattleRun extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: Text(AppLocalizations.of(context).battleGiveUpTitle, style: AppTypography.headline3),
+        title: Text(AppLocalizations.of(context).battleGiveUpTitle,
+            style: AppTypography.headline3),
         content: Text(
           'Der aktuelle Versuch zählt dann als nicht geschafft.',
           style: AppTypography.bodyMedium,
@@ -495,9 +505,8 @@ class _BattleResult extends ConsumerWidget {
         if (a.completed) return a.elapsedMs.compareTo(b.elapsedMs);
         return b.totalReps.compareTo(a.totalReps);
       });
-    final winner = ranked.isNotEmpty && ranked.first.completed
-        ? ranked.first
-        : null;
+    final winner =
+        ranked.isNotEmpty && ranked.first.completed ? ranked.first : null;
 
     return Padding(
       padding: const EdgeInsets.all(AppConstants.spacingMd),
@@ -526,8 +535,7 @@ class _BattleResult extends ConsumerWidget {
                   padding: const EdgeInsets.all(AppConstants.spacingMd),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
-                    borderRadius:
-                        BorderRadius.circular(AppConstants.radiusMd),
+                    borderRadius: BorderRadius.circular(AppConstants.radiusMd),
                     border: Border.all(
                       color: isWinner
                           ? AppColors.accent
@@ -548,8 +556,7 @@ class _BattleResult extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(score.player,
-                                style: AppTypography.bodyLarge),
+                            Text(score.player, style: AppTypography.bodyLarge),
                             Text(
                               score.completed
                                   ? 'geschafft'
