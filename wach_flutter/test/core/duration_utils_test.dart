@@ -23,13 +23,11 @@ void main() {
 
     test('zeigt ab einer Stunde H:MM:SS', () {
       expect(
-        const Duration(hours: 1, minutes: 23, seconds: 45)
-            .toMinutesSeconds(),
+        const Duration(hours: 1, minutes: 23, seconds: 45).toMinutesSeconds(),
         '1:23:45',
       );
       expect(
-        const Duration(hours: 12, minutes: 5, seconds: 9)
-            .toMinutesSeconds(),
+        const Duration(hours: 12, minutes: 5, seconds: 9).toMinutesSeconds(),
         '12:05:09',
       );
     });
