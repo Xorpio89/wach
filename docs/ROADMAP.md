@@ -19,6 +19,23 @@
 
 ---
 
+## Als Naechstes: Workout starten (notiert 2026-08-18)
+
+**Prioritaet:** Hoch · Konzept: [WORKOUT_START.md](WORKOUT_START.md)
+
+Beim Starten soll man zwischen drei Wegen waehlen koennen: das letzte
+Workout wiederholen (wie heute), ein bestimmtes Workout aus dem Verlauf
+wiederholen (etwa "200 Liegestuetze", Bestzeit 15:02) oder frisch mit den
+Standarduebungen anfangen — letzteres immer als unterste Option. Dazu aus
+dem Verlauf heraus ein Workout direkt erneut oeffnen.
+
+Voraussetzung: Sessions halten heute nur die geschafften Wiederholungen
+fest, nicht die damals gueltigen Ziele. Ohne die lassen sie sich nicht als
+Vorlage wiederverwenden. Dieselbe Luecke blockiert den Zielbonus der
+Gamification.
+
+---
+
 ## Phase 3: Training Plans (Q1 2026)
 
 ### 3.1 Custom Training Plans
