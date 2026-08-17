@@ -1,30 +1,33 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../exercise/presentation/providers/exercise_providers.dart';
 import '../../data/datasources/session_local_datasource.dart';
 import '../../data/models/session_model.dart';
-import '../../../exercise/presentation/providers/exercise_providers.dart';
+
+part 'session_providers.g.dart';
 
 /// Session datasource provider
-final sessionDataSourceProvider = Provider<SessionLocalDataSource>((ref) {
-  final dbService = ref.watch(databaseServiceProvider);
-  return SessionLocalDataSource(dbService);
-});
+@Riverpod(keepAlive: true)
+SessionLocalDataSource sessionDataSource(Ref ref) {
+  return SessionLocalDataSource(ref.watch(databaseServiceProvider));
+}
 
 /// All sessions stream provider
-final sessionsStreamProvider = StreamProvider<List<SessionModel>>((ref) async* {
-  final dataSource = ref.watch(sessionDataSourceProvider);
-  // Initial fetch
-  yield await dataSource.getAll();
-});
+@Riverpod(keepAlive: true)
+Stream<List<SessionModel>> sessionsStream(Ref ref) async* {
+  yield await ref.watch(sessionDataSourceProvider).getAll();
+}
 
 /// Recent sessions provider (for home screen)
-final recentSessionsProvider = FutureProvider<List<SessionModel>>((ref) async {
-  final dataSource = ref.watch(sessionDataSourceProvider);
-  return dataSource.getRecent(limit: 10);
-});
+@Riverpod(keepAlive: true)
+Future<List<SessionModel>> recentSessions(Ref ref) {
+  return ref.watch(sessionDataSourceProvider).getRecent(limit: 10);
+}
 
 /// Session notifier for mutations
-class SessionNotifier extends Notifier<AsyncValue<List<SessionModel>>> {
+@Riverpod(keepAlive: true)
+class SessionNotifier extends _$SessionNotifier {
   @override
   AsyncValue<List<SessionModel>> build() {
     _loadSessions();
@@ -42,26 +45,18 @@ class SessionNotifier extends Notifier<AsyncValue<List<SessionModel>>> {
   }
 
   Future<void> saveSession(SessionModel session) async {
-    try {
-      final dataSource = ref.read(sessionDataSourceProvider);
-      await dataSource.insert(session);
-      await _loadSessions();
-      // Invalidate recent sessions too
-      ref.invalidate(recentSessionsProvider);
-    } catch (e) {
-      rethrow;
-    }
+    final dataSource = ref.read(sessionDataSourceProvider);
+    await dataSource.insert(session);
+    await _loadSessions();
+    // Invalidate recent sessions too
+    ref.invalidate(recentSessionsProvider);
   }
 
   Future<void> deleteSession(String id) async {
-    try {
-      final dataSource = ref.read(sessionDataSourceProvider);
-      await dataSource.delete(id);
-      await _loadSessions();
-      ref.invalidate(recentSessionsProvider);
-    } catch (e) {
-      rethrow;
-    }
+    final dataSource = ref.read(sessionDataSourceProvider);
+    await dataSource.delete(id);
+    await _loadSessions();
+    ref.invalidate(recentSessionsProvider);
   }
 
   Future<void> refresh() async {
@@ -86,8 +81,3 @@ class SessionNotifier extends Notifier<AsyncValue<List<SessionModel>>> {
     await dataSource.deleteAll();
   }
 }
-
-final sessionNotifierProvider =
-    NotifierProvider<SessionNotifier, AsyncValue<List<SessionModel>>>(
-  SessionNotifier.new,
-);
