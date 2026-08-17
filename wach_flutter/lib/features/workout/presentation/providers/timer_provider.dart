@@ -1,6 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/widgets.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sembast/sembast.dart';
+
+import '../../../../core/database/database_service.dart';
+
+part 'timer_provider.g.dart';
 
 /// Timer Mode
 enum TimerMode {
@@ -82,16 +88,153 @@ class TimerState {
 }
 
 /// Timer Notifier
-class TimerNotifier extends Notifier<TimerState> {
+@Riverpod(keepAlive: true)
+class SessionTimer extends _$SessionTimer {
+  /// Wie oft die Anzeige nachgezogen wird.
+  ///
+  /// Vorher 10 ms — 100 State-Updates pro Sekunde, von denen ein
+  /// 60-Hz-Display nicht einmal die Haelfte zu Gesicht bekommt. Ein Tick
+  /// pro Frame reicht fuer die Hundertstel-Anzeige und drittelt die Last.
+  static const _tickInterval = Duration(milliseconds: 16);
+
+  /// Ab wann ein gespeicherter Lauf nicht mehr aufgenommen wird.
+  ///
+  /// Eine Session, die seit einem halben Tag offen steht, ist vergessen
+  /// worden und nicht pausiert. Sie wieder aufzuschlagen wuerde eine
+  /// zwoelfstellige Laufzeit anzeigen, statt zu helfen.
+  static const _maxRestoreAge = Duration(hours: 12);
+
+  static const _recordKey = 'current';
+
   Timer? _timer;
   DateTime? _startTime;
+  AppLifecycleListener? _lifecycle;
+
+  StoreRef<String, Map<String, Object?>> get _store =>
+      DatabaseService.activeTimerStore;
 
   @override
   TimerState build() {
+    _lifecycle = AppLifecycleListener(onStateChange: _onLifecycleChanged);
     ref.onDispose(() {
       _timer?.cancel();
+      _lifecycle?.dispose();
     });
+    _restore();
     return const TimerState();
+  }
+
+  /// Den Stand der Uhr sichern.
+  ///
+  /// Gespeichert wird der Startzeitpunkt, nicht die verstrichene Zeit: nur
+  /// so laeuft die Uhr korrekt weiter, wenn das Handy die App zwischendurch
+  /// aus dem Speicher wirft.
+  Future<void> _persist() async {
+    try {
+      final db = await DatabaseService().database;
+      await _store.record(_recordKey).put(db, {
+        'startedAtMillis': _startTime?.millisecondsSinceEpoch,
+        'elapsedMillis': state.elapsed.inMilliseconds,
+        'targetMillis': state.target?.inMilliseconds,
+        'isRunning': state.isRunning,
+      });
+    } catch (e) {
+      // Die laufende Session darf an der Persistenz nie haengenbleiben.
+      debugPrint('[Timer] Speichern fehlgeschlagen: $e');
+    }
+  }
+
+  Future<void> _clearPersisted() async {
+    try {
+      final db = await DatabaseService().database;
+      await _store.record(_recordKey).delete(db);
+    } catch (e) {
+      debugPrint('[Timer] Loeschen fehlgeschlagen: $e');
+    }
+  }
+
+  /// Einen gesicherten Stand wieder aufnehmen.
+  Future<void> _restore() async {
+    try {
+      final db = await DatabaseService().database;
+      final rec = await _store.record(_recordKey).get(db);
+      if (rec == null) return;
+
+      final startedAtMillis = rec['startedAtMillis'];
+      final elapsedMillis = rec['elapsedMillis'];
+      if (startedAtMillis is! int || elapsedMillis is! int) return;
+
+      final targetMillis = rec['targetMillis'];
+      final target =
+          targetMillis is int ? Duration(milliseconds: targetMillis) : null;
+      final wasRunning = rec['isRunning'] == true;
+
+      final startTime = DateTime.fromMillisecondsSinceEpoch(startedAtMillis);
+      // Bei einer laufenden Uhr zaehlt die Zeit weiter, die weg war —
+      // genau darum wird der Startzeitpunkt gesichert und nicht der Stand.
+      final elapsed = wasRunning
+          ? DateTime.now().difference(startTime)
+          : Duration(milliseconds: elapsedMillis);
+
+      if (elapsed.isNegative || elapsed > _maxRestoreAge) {
+        await _clearPersisted();
+        return;
+      }
+      if (elapsed == Duration.zero && !wasRunning) return;
+
+      _startTime = startTime;
+      state = TimerState(
+        elapsed: elapsed,
+        target: target,
+        isRunning: wasRunning,
+      );
+      if (wasRunning) _startTimer();
+
+      debugPrint('[Timer] Stand wiederhergestellt: $elapsed');
+    } catch (e) {
+      debugPrint('[Timer] Wiederherstellen fehlgeschlagen: $e');
+    }
+  }
+
+  /// Im Hintergrund wird nicht getickt.
+  ///
+  /// `elapsed` leitet sich ohnehin aus `_startTime` (Wall-Clock) ab, der
+  /// Timer verliert also keine Sekunde — beim Zurueckkommen wird einmal
+  /// nachgezogen statt tausende Updates aufzustauen.
+  ///
+  /// **Bugfix 2026-08-15:** Genau dieser Rueckstau war die Ursache dafuer,
+  /// dass die App nach einem Wechsel in eine andere App sekundenlang nicht
+  /// auf Taps reagierte: der Ticker lief im Hintergrund mit 100 Hz weiter
+  /// und markierte jedes Mal Widgets als "neu zu bauen", obwohl gar kein
+  /// Frame gezeichnet wurde.
+  void _onLifecycleChanged(AppLifecycleState lifecycleState) {
+    if (!state.isRunning) return;
+
+    switch (lifecycleState) {
+      case AppLifecycleState.resumed:
+      case AppLifecycleState.inactive:
+        // `inactive` heisst nur "nicht im Fokus" — Benachrichtigungsleiste,
+        // App-Umschalter, eingehender Anruf. Die Uhr ist dabei sichtbar und
+        // darf nicht stehenbleiben.
+        _syncElapsed();
+        _startTimer();
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
+        _timer?.cancel();
+        _timer = null;
+        _syncElapsed();
+        // Der Wechsel in den Hintergrund ist der Moment, in dem eine
+        // installierte Web-App entladen werden kann.
+        _persist();
+    }
+  }
+
+  /// Anzeige einmalig auf die tatsaechlich verstrichene Zeit setzen.
+  void _syncElapsed() {
+    final startTime = _startTime;
+    if (startTime == null) return;
+    state = state.copyWith(elapsed: DateTime.now().difference(startTime));
   }
 
   /// Start stopwatch mode
@@ -104,6 +247,7 @@ class TimerNotifier extends Notifier<TimerState> {
       elapsed: Duration.zero,
     );
     _startTimer();
+    _persist();
   }
 
   /// Start countdown mode with target duration
@@ -117,12 +261,14 @@ class TimerNotifier extends Notifier<TimerState> {
       elapsed: Duration.zero,
     );
     _startTimer();
+    _persist();
   }
 
   /// Pause timer
   void pause() {
     _timer?.cancel();
     state = state.copyWith(isRunning: false);
+    _persist();
   }
 
   /// Resume timer
@@ -134,6 +280,7 @@ class TimerNotifier extends Notifier<TimerState> {
     _startTime = DateTime.now().subtract(state.elapsed);
     state = state.copyWith(isRunning: true);
     _startTimer();
+    _persist();
   }
 
   /// Stop and reset timer
@@ -145,6 +292,7 @@ class TimerNotifier extends Notifier<TimerState> {
       isFinished: true,
       elapsed: finalElapsed,
     );
+    _persist();
   }
 
   /// Reset timer
@@ -152,6 +300,7 @@ class TimerNotifier extends Notifier<TimerState> {
     _timer?.cancel();
     _startTime = null;
     state = const TimerState();
+    _clearPersisted();
   }
 
   /// Toggle between stopwatch and countdown mode
@@ -166,11 +315,13 @@ class TimerNotifier extends Notifier<TimerState> {
   /// Set target time (without changing mode)
   void setTarget(Duration target) {
     state = state.copyWith(target: target);
+    _persist();
   }
 
   /// Clear target time
   void clearTarget() {
     state = state.copyWith(clearTarget: true, showRemaining: false);
+    _persist();
   }
 
   /// Einen beendeten Lauf wiederherstellen (für "Rückgängig").
@@ -186,6 +337,7 @@ class TimerNotifier extends Notifier<TimerState> {
       isRunning: false,
       isFinished: false,
     );
+    _persist();
   }
 
   /// Toggle between showing elapsed and remaining time
@@ -197,16 +349,7 @@ class TimerNotifier extends Notifier<TimerState> {
 
   void _startTimer() {
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(milliseconds: 10), (_) {
-      if (_startTime != null) {
-        final elapsed = DateTime.now().difference(_startTime!);
-        state = state.copyWith(elapsed: elapsed);
-      }
-    });
+    _timer = Timer.periodic(_tickInterval, (_) => _syncElapsed());
   }
 }
 
-/// Timer Provider
-final timerProvider = NotifierProvider<TimerNotifier, TimerState>(
-  TimerNotifier.new,
-);

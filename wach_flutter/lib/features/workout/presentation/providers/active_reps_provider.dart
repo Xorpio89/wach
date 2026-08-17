@@ -1,20 +1,23 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sembast/sembast.dart';
 
 import '../../../../core/database/database_service.dart';
+
+part 'active_reps_provider.g.dart';
 
 /// Reps der AKTUELL laufenden Session — app-weiter Zustand, nicht Widget-State.
 ///
 /// **Bugfix 2026-08-07:** Vorher lagen die Reps als `_repsMap` direkt im State von
 /// `WorkoutScreen`. Beim Verlassen des Screens wurde der State disposed und die Reps
-/// waren weg — der Timer lief weiter, weil `timerProvider` ein app-weiter
+/// waren weg — der Timer lief weiter, weil `sessionTimerProvider` ein app-weiter
 /// `NotifierProvider` ist. Genau diese Inkonsistenz war der gemeldete Fehler.
 ///
 /// Zusaetzlich wird nach sembast gespiegelt, damit die Reps auch einen **App-Neustart**
 /// ueberleben (Android beendet Hintergrund-Apps aggressiv — sonst waere der Fehler
 /// nur verschoben, nicht behoben).
-class ActiveRepsNotifier extends Notifier<Map<String, int>> {
+@Riverpod(keepAlive: true)
+class ActiveReps extends _$ActiveReps {
   static const _recordKey = 'current';
 
   StoreRef<String, Map<String, Object?>> get _store =>
@@ -39,7 +42,8 @@ class ActiveRepsNotifier extends Notifier<Map<String, int>> {
       }
       if (restored.isNotEmpty) {
         state = restored;
-        debugPrint('[ActiveReps] ${restored.length} Übung(en) wiederhergestellt');
+        debugPrint(
+            '[ActiveReps] ${restored.length} Übung(en) wiederhergestellt');
       }
     } catch (e) {
       // Persistenz darf die laufende Session nie blockieren.
@@ -116,7 +120,3 @@ class ActiveRepsNotifier extends Notifier<Map<String, int>> {
   bool get hasAnyReps => state.values.any((r) => r > 0);
 }
 
-final activeRepsProvider =
-    NotifierProvider<ActiveRepsNotifier, Map<String, int>>(
-  ActiveRepsNotifier.new,
-);

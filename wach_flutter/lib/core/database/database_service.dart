@@ -21,7 +21,13 @@ class DatabaseService {
   // 2026-08-07 Bugfix: Reps der LAUFENDEN Session lagen nur im Widget-State
   // (workout_screen `_repsMap`) und waren beim Verlassen des Screens verloren.
   // Der Timer ueberlebte, weil er ein app-weiter Provider ist -> Inkonsistenz.
-  static final activeWorkoutStore = stringMapStoreFactory.store('active_workout');
+  static final activeWorkoutStore =
+      stringMapStoreFactory.store('active_workout');
+  // 2026-08-15: Der Stand der Uhr lag nur im Arbeitsspeicher. Als
+  // installierte Web-App wird die Seite vom Handy im Hintergrund entladen
+  // und beim Zurueckkehren neu geladen — die Reps kamen dann aus der
+  // Datenbank zurueck, die gelaufene Zeit stand wieder auf null.
+  static final activeTimerStore = stringMapStoreFactory.store('active_timer');
 
   /// Get database instance (singleton)
   Future<Database> get database async {
@@ -81,5 +87,17 @@ class DatabaseService {
     if (_initialized) return;
     debugPrint('[DB] Database factory initialized (sembast)');
     _initialized = true;
+  }
+
+  /// Setzt die Datenbank von aussen — ausschliesslich fuer Tests.
+  ///
+  /// Damit laeuft die komplette Kette (Repositories, Provider, Screens)
+  /// im Test unveraendert gegen eine In-Memory-Datenbank, statt sie mit
+  /// Fakes nachzubauen. Ohne diesen Einstieg wuerde jeder Widget-Test am
+  /// `path_provider` scheitern, den es im Testumfeld nicht gibt.
+  @visibleForTesting
+  static void setDatabaseForTests(Database? db) {
+    _database = db;
+    _initialized = db != null;
   }
 }
