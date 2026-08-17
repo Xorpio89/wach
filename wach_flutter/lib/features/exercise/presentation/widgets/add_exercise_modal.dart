@@ -6,7 +6,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../settings/data/settings_provider.dart';
 import '../providers/exercise_providers.dart';
+import '../providers/quick_pick_expanded_provider.dart';
 
 /// Modal for adding a new exercise
 class AddExerciseModal extends ConsumerStatefulWidget {
@@ -52,7 +54,7 @@ class _AddExerciseModalState extends ConsumerState<AddExerciseModal> {
     setState(() => _isLoading = true);
     HapticUtils.lightTap();
 
-    final notifier = ref.read(exerciseNotifierProvider.notifier);
+    final notifier = ref.read(exerciseProvider.notifier);
     final exercise = await notifier.createExercise(
       name: _nameController.text,
       targetReps: _repsController.text.isNotEmpty
@@ -77,7 +79,8 @@ class _AddExerciseModalState extends ConsumerState<AddExerciseModal> {
         left: AppConstants.spacingMd,
         right: AppConstants.spacingMd,
         top: AppConstants.spacingMd,
-        bottom: MediaQuery.of(context).viewInsets.bottom + AppConstants.spacingMd,
+        bottom:
+            MediaQuery.of(context).viewInsets.bottom + AppConstants.spacingMd,
       ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
@@ -109,12 +112,26 @@ class _AddExerciseModalState extends ConsumerState<AddExerciseModal> {
               l10n.exerciseAdd,
               style: AppTypography.headline2,
             ),
-            const SizedBox(height: AppConstants.spacingLg),
+            const SizedBox(height: AppConstants.spacingMd),
+
+            // Schnellauswahl: fuellt das Formular vor, statt die Uebung
+            // sofort anzulegen — Zielwiederholungen lassen sich so noch
+            // anpassen, bevor gespeichert wird.
+            _QuickPickChips(
+              onPick: (name, reps) {
+                HapticUtils.selection();
+                setState(() {
+                  _nameController.text = name;
+                  _repsController.text = reps.toString();
+                });
+              },
+            ),
 
             // Exercise Name
             TextFormField(
               controller: _nameController,
-              autofocus: true,
+              // Kein autofocus: die Tastatur wuerde sofort hochfahren und
+              // die Schnellauswahl darueber verdecken.
               textCapitalization: TextCapitalization.words,
               textInputAction: TextInputAction.next,
               style: AppTypography.bodyLarge,
@@ -143,6 +160,33 @@ class _AddExerciseModalState extends ConsumerState<AddExerciseModal> {
               ),
               onFieldSubmitted: (_) => _submit(),
             ),
+            const SizedBox(height: AppConstants.spacingSm),
+
+            // Haeufige Zielwerte zum Antippen — schneller als tippen und
+            // ein Hinweis darauf, dass das Ziel fuer ein ganzes Workout
+            // gilt, nicht fuer einen Satz.
+            Wrap(
+              spacing: AppConstants.spacingSm,
+              children: [
+                for (final ziel in AppConstants.zielVorschlaege)
+                  ActionChip(
+                    label: Text(
+                      '$ziel',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    backgroundColor: AppColors.surface,
+                    side: BorderSide(
+                      color: AppColors.secondary.withValues(alpha: 0.3),
+                    ),
+                    onPressed: () {
+                      HapticUtils.selection();
+                      setState(() => _repsController.text = '$ziel');
+                    },
+                  ),
+              ],
+            ),
             const SizedBox(height: AppConstants.spacingLg),
 
             // Submit Button
@@ -166,6 +210,118 @@ class _AddExerciseModalState extends ConsumerState<AddExerciseModal> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Schnellauswahl haeufiger Uebungen.
+///
+/// Vorher `_QuickAddChips` unter den Kacheln im Workout-Screen und nur im
+/// entsperrten Modus sichtbar. Mit dem Wegfall des Sperrmodus sitzt die
+/// Auswahl dort, wo sie hingehoert: im Hinzufuegen-Dialog.
+class _QuickPickChips extends ConsumerStatefulWidget {
+  final void Function(String name, int reps) onPick;
+
+  const _QuickPickChips({required this.onPick});
+
+  @override
+  ConsumerState<_QuickPickChips> createState() => _QuickPickChipsState();
+}
+
+class _QuickPickChipsState extends ConsumerState<_QuickPickChips> {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    // Erst die haeufigsten Vorschlaege. Ob aufgeklappt wird, merkt sich die
+    // App — sonst muesste man es bei jeder neuen Uebung wiederholen.
+    final alleZeigen = ref.watch(quickPickExpandedProvider);
+    final settingsAsync = ref.watch(quickChipSettingsProvider);
+    final existingExercises = ref.watch(exercisesProvider);
+
+    // Bereits angelegte Uebungen ausblenden (Gross-/Kleinschreibung egal).
+    final existingNames = existingExercises.maybeWhen(
+      data: (exercises) => exercises.map((e) => e.name.toLowerCase()).toSet(),
+      orElse: () => <String>{},
+    );
+
+    return settingsAsync.when(
+      data: (settings) {
+        bool nochNichtAngelegt(QuickChipExercise e) =>
+            !existingNames.contains(e.name.toLowerCase());
+
+        // Eingeklappt stehen die in den Einstellungen gewaehlten
+        // Lieblingsuebungen, aufgeklappt der ganze Vorrat. Ohne diese
+        // Trennung waere der Schalter wirkungslos: die Voreinstellung
+        // umfasst genau so viele Eintraege, wie eingeklappt passen.
+        final favoriten =
+            settings.enabledExercises.where(nochNichtAngelegt).toList();
+        final alle = allQuickChipExercises.where(nochNichtAngelegt).toList();
+
+        if (alle.isEmpty) return const SizedBox.shrink();
+
+        const grenze = AppConstants.quickPickCollapsedCount;
+        final sichtbar = alleZeigen ? alle : favoriten.take(grenze).toList();
+        final versteckt = alle.length - sichtbar.length;
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppConstants.spacingMd),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: AppConstants.spacingSm,
+                runSpacing: AppConstants.spacingSm,
+                children: sichtbar.map((exercise) {
+                  return ActionChip(
+                    avatar: Icon(
+                      exercise.icon,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
+                    label: Text(
+                      exercise.name,
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    backgroundColor: AppColors.surface,
+                    side: BorderSide(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                    ),
+                    onPressed: () =>
+                        widget.onPick(exercise.name, exercise.defaultReps),
+                  );
+                }).toList(),
+              ),
+              if (versteckt > 0 || alleZeigen)
+                TextButton.icon(
+                  onPressed: () =>
+                      ref.read(quickPickExpandedProvider.notifier).umschalten(),
+                  icon: Icon(
+                    alleZeigen
+                        ? Icons.expand_less_rounded
+                        : Icons.expand_more_rounded,
+                    size: 18,
+                  ),
+                  label: Text(
+                    alleZeigen
+                        ? l10n.exerciseShowLessSuggestions
+                        : l10n.exerciseShowMoreSuggestions(versteckt),
+                  ),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.spacingSm,
+                    ),
+                    minimumSize: const Size(0, AppConstants.minTouchTargetSize),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }

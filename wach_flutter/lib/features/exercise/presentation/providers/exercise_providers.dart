@@ -1,46 +1,50 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../core/database/database_service.dart';
 import '../../data/datasources/exercise_local_datasource.dart';
 import '../../data/repositories/exercise_repository_impl.dart';
 import '../../domain/entities/exercise.dart';
+import '../../../settings/data/settings_provider.dart';
 import '../../domain/repositories/exercise_repository.dart';
 
+part 'exercise_providers.g.dart';
+
 /// Database Service Provider
-final databaseServiceProvider = Provider<DatabaseService>((ref) {
+@Riverpod(keepAlive: true)
+DatabaseService databaseService(Ref ref) {
   return DatabaseService();
-});
+}
 
 /// Exercise Local DataSource Provider
-final exerciseLocalDataSourceProvider = Provider<ExerciseLocalDataSource>((ref) {
-  final dbService = ref.watch(databaseServiceProvider);
-  return ExerciseLocalDataSource(dbService);
-});
+@Riverpod(keepAlive: true)
+ExerciseLocalDataSource exerciseLocalDataSource(Ref ref) {
+  return ExerciseLocalDataSource(ref.watch(databaseServiceProvider));
+}
 
 /// Exercise Repository Provider
-final exerciseRepositoryProvider = Provider<ExerciseRepository>((ref) {
-  final dataSource = ref.watch(exerciseLocalDataSourceProvider);
-  return ExerciseRepositoryImpl(dataSource);
-});
+@Riverpod(keepAlive: true)
+ExerciseRepository exerciseRepository(Ref ref) {
+  return ExerciseRepositoryImpl(ref.watch(exerciseLocalDataSourceProvider));
+}
 
 /// All Exercises Provider (Future)
-final exercisesProvider = FutureProvider<List<Exercise>>((ref) async {
-  final repository = ref.watch(exerciseRepositoryProvider);
-  return repository.getAll();
-});
+@Riverpod(keepAlive: true)
+Future<List<Exercise>> exercises(Ref ref) {
+  return ref.watch(exerciseRepositoryProvider).getAll();
+}
 
 /// Exercises Stream Provider (Real-time)
-final exercisesStreamProvider = StreamProvider<List<Exercise>>((ref) {
-  final repository = ref.watch(exerciseRepositoryProvider);
-  return repository.watchAll();
-});
+@Riverpod(keepAlive: true)
+Stream<List<Exercise>> exercisesStream(Ref ref) {
+  return ref.watch(exerciseRepositoryProvider).watchAll();
+}
 
 /// Exercise by ID Provider
-final exerciseByIdProvider = FutureProvider.family<Exercise?, String>((ref, id) async {
-  final repository = ref.watch(exerciseRepositoryProvider);
-  return repository.getById(id);
-});
+@Riverpod(keepAlive: true)
+Future<Exercise?> exerciseById(Ref ref, String id) {
+  return ref.watch(exerciseRepositoryProvider).getById(id);
+}
 
 /// Exercise Notifier State
 class ExerciseNotifierState {
@@ -64,7 +68,8 @@ class ExerciseNotifierState {
 }
 
 /// Exercise Notifier for CRUD operations
-class ExerciseNotifier extends Notifier<ExerciseNotifierState> {
+@Riverpod(keepAlive: true)
+class ExerciseNotifier extends _$ExerciseNotifier {
   final Uuid _uuid = const Uuid();
 
   @override
@@ -136,32 +141,19 @@ class ExerciseNotifier extends Notifier<ExerciseNotifierState> {
       final exercises = await _repository.getAll();
       if (exercises.isNotEmpty) return;
 
-      // Add the 4 basic calisthenics exercises
+      // Die Standarduebungen stehen in `defaultCalisthenicsExercises`.
+      // Sie hier noch einmal aufzuzaehlen hiess, dass Namen und Zielwerte
+      // an zwei Stellen gepflegt werden mussten — und beim Anheben der
+      // Ziele wäre genau eine davon vergessen worden.
+      final jetzt = DateTime.now();
       final defaults = [
-        Exercise(
-          id: _uuid.v4(),
-          name: 'Pull Ups',
-          targetReps: 10,
-          createdAt: DateTime.now(),
-        ),
-        Exercise(
-          id: _uuid.v4(),
-          name: 'Dips',
-          targetReps: 10,
-          createdAt: DateTime.now(),
-        ),
-        Exercise(
-          id: _uuid.v4(),
-          name: 'Push Ups',
-          targetReps: 15,
-          createdAt: DateTime.now(),
-        ),
-        Exercise(
-          id: _uuid.v4(),
-          name: 'Squats',
-          targetReps: 15,
-          createdAt: DateTime.now(),
-        ),
+        for (final vorlage in defaultCalisthenicsExercises)
+          Exercise(
+            id: _uuid.v4(),
+            name: vorlage.name,
+            targetReps: vorlage.defaultReps,
+            createdAt: jetzt,
+          ),
       ];
 
       for (final exercise in defaults) {
@@ -176,8 +168,3 @@ class ExerciseNotifier extends Notifier<ExerciseNotifierState> {
   }
 }
 
-/// Exercise Notifier Provider
-final exerciseNotifierProvider =
-    NotifierProvider<ExerciseNotifier, ExerciseNotifierState>(
-  ExerciseNotifier.new,
-);

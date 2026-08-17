@@ -59,6 +59,35 @@
   "exerciseDeleteBody": "The exercise will be removed permanently.",
   "exerciseDeleteTooltip": "Delete exercise",
   "exerciseResetReps": "Reset reps ({count} → 0)",
+  "exerciseShowMoreSuggestions": "Show {count} more",
+  "@exerciseShowMoreSuggestions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exerciseShowLessSuggestions": "Show less",
+  "gamificationLevel": "Level {level}",
+  "@gamificationLevel": {
+    "placeholders": { "level": { "type": "int" } }
+  },
+  "gamificationToNextLevel": "{points} points to go",
+  "@gamificationToNextLevel": {
+    "placeholders": { "points": { "type": "int" } }
+  },
+  "gamificationStreak": "{days, plural, one{{days} day in a row} other{{days} days in a row}}",
+  "@gamificationStreak": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "gamificationPointsEarned": "+{points} points",
+  "@gamificationPointsEarned": {
+    "placeholders": { "points": { "type": "int" } }
+  },
+  "gamificationLevelUp": "Level {level} reached!",
+  "@gamificationLevelUp": {
+    "placeholders": { "level": { "type": "int" } }
+  },
   "exerciseEmptyTitle": "No exercises yet",
   "exerciseEmptySubtitle": "Add an exercise to get started",
   "sessionHistoryTitle": "Session history",
