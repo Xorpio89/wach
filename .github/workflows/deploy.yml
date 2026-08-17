@@ -3,6 +3,9 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # Auch auf Pull Requests pruefen und bauen — veroeffentlicht wird von
+  # dort nichts, das erledigt allein der Deploy-Schritt unten.
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -15,14 +18,52 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  # Erst pruefen, dann bauen: ein Stand, der die Tests nicht besteht,
+  # soll gar nicht erst auf die Seite gelangen.
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.47.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        working-directory: wach_flutter
+        run: flutter pub get
+
+      - name: Generate localizations
+        working-directory: wach_flutter
+        run: flutter gen-l10n
+
+      # Riverpod erzeugt die Provider (*.g.dart). Ohne diesen Schritt
+      # fehlen sie im frisch ausgecheckten Baum und nichts kompiliert.
+      - name: Generate providers
+        working-directory: wach_flutter
+        run: dart run build_runner build
+
+      # Hinweise (`info`) sollen den Durchlauf nicht abbrechen, Warnungen
+      # und Fehler schon.
+      - name: Analyze
+        working-directory: wach_flutter
+        run: flutter analyze --no-fatal-infos
+
+      - name: Test
+        working-directory: wach_flutter
+        run: flutter test
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.0'
           channel: 'stable'
           cache: true
 
@@ -38,9 +79,20 @@ jobs:
         working-directory: wach_flutter
         run: flutter gen-l10n
 
+      # Riverpod erzeugt die Provider (*.g.dart). Ohne diesen Schritt
+      # fehlen sie im frisch ausgecheckten Baum und nichts kompiliert.
+      - name: Generate providers
+        working-directory: wach_flutter
+        run: dart run build_runner build
+
+      # Die Versionsnummer entsteht aus der Anzahl der Commits, damit sie
+      # ohne Zutun hochtickt (siehe tools/build.mjs fuer den lokalen Weg).
       - name: Build web
         working-directory: wach_flutter
-        run: flutter build web --release --base-href "/wach/"
+        run: |
+          APP_VERSION="1.0.$(git rev-list --count HEAD)"
+          echo "Version $APP_VERSION"
+          flutter build web --release --base-href "/wach/"             --dart-define=APP_VERSION="$APP_VERSION"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -53,6 +105,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Deploy to GitHub Pages
         id: deployment

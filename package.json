@@ -1,0 +1,14 @@
+{
+  "name": "wach",
+  "private": true,
+  "description": "W.A.C.H. — Startbefehle fuer die lokale Entwicklung",
+  "scripts": {
+    "wach": "bun run build && bun run serve",
+    "serve": "bun run tools/serve.mjs",
+    "build": "bun run tools/build.mjs",
+    "dev": "bun run tools/flutter.mjs run -d chrome --web-port 8091",
+    "test": "bun run tools/flutter.mjs test",
+    "analyze": "bun run tools/flutter.mjs analyze --no-fatal-infos",
+    "check": "bun run analyze && bun run test"
+  }
+}
