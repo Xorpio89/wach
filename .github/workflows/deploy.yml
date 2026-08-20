@@ -60,6 +60,11 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Die ganze Historie, nicht nur den letzten Commit: die
+          # Versionsnummer entsteht aus deren Anzahl. Mit der Voreinstellung
+          # (ein Commit) stand dort immer 1.0.1.
+          fetch-depth: 0
 
       - uses: subosito/flutter-action@v2
         with:
