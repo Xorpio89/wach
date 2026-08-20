@@ -250,6 +250,33 @@
   </script>
   <script src="flutter_bootstrap.js" async></script>
   <script>
+    // Nach einer neuen Fassung sehen, sobald die App in den Vordergrund
+    // kommt.
+    //
+    // Warum das noetig ist: eine installierte App wird meist nur in den
+    // Hintergrund geschoben, nicht beendet. Der Browser fragt dann von
+    // sich aus lange nicht nach einem neuen Service Worker, und der
+    // Startbildschirm zeigt weiter die alte Fassung.
+    //
+    // Der Service Worker von Flutter meldet sich beim Aktivieren selbst ab
+    // und laedt alle Fenster neu — der Anstoss hier genuegt also, es
+    // braucht keine eigene Update-Logik.
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+
+      function nachUpdateSehen() {
+        if (document.visibilityState !== 'visible') return;
+        navigator.serviceWorker.getRegistration().then(function (reg) {
+          if (reg) reg.update();
+        });
+      }
+
+      document.addEventListener('visibilitychange', nachUpdateSehen);
+      // Und einmal pro Stunde, falls die App lange offen bleibt.
+      setInterval(nachUpdateSehen, 60 * 60 * 1000);
+    })();
+  </script>
+  <script>
     // Hide skeleton when Flutter is ready
     window.addEventListener('flutter-first-frame', function() {
       const skeleton = document.getElementById('skeleton-loader');
