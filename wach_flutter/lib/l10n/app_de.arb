@@ -116,6 +116,28 @@
   "@gamificationLevelUp": {
     "placeholders": { "level": { "type": "int" } }
   },
+  "achievementsTitle": "Fortschritt",
+  "achievementsTooltip": "Fortschritt und Abzeichen",
+  "achievementsPoints": "Punkte",
+  "achievementsSessions": "Workouts",
+  "achievementsStreakLabel": "Serie",
+  "achievementsDays": "{days, plural, one{{days} Tag} other{{days} Tage}}",
+  "@achievementsDays": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "achievementsBadges": "Abzeichen",
+  "achievementsLevels": "Stufen",
+  "achievementsLevelAt": "ab {points} Punkten",
+  "@achievementsLevelAt": {
+    "placeholders": { "points": { "type": "int" } }
+  },
+  "achievementsNothingYet": "Beende ein Workout, dann geht es los.",
+  "badgeStartedName": "Angefangen",
+  "badgeStartedHint": "Erstes Workout beendet",
+  "badgeThousandName": "Tausend",
+  "badgeThousandHint": "1.000 Wiederholungen insgesamt",
+  "badgeOneWeekName": "Eine Woche",
+  "badgeOneWeekHint": "Sieben Tage in Folge trainiert",
   "exerciseEmptyTitle": "Noch keine Übungen",
   "exerciseEmptySubtitle": "Füge eine Übung hinzu, um zu starten",
   "sessionHistoryTitle": "Session-Verlauf",

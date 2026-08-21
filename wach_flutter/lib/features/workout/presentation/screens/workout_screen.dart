@@ -15,6 +15,8 @@ import '../../../exercise/presentation/widgets/add_exercise_modal.dart';
 import '../../../exercise/presentation/widgets/delete_exercise_dialog.dart';
 import '../../../exercise/presentation/widgets/edit_exercise_modal.dart';
 import '../../../exercise/presentation/widgets/exercise_tile.dart';
+import '../../../gamification/presentation/providers/gamification_provider.dart';
+import '../../../gamification/presentation/widgets/level_up_overlay.dart';
 import '../../data/models/session_model.dart';
 import '../../../settings/data/settings_provider.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -159,6 +161,8 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     // Vor dem Leeren merken: danach steht der Zaehler wieder auf null.
     final verdientePunkte =
         previousReps.values.fold<int>(0, (summe, reps) => summe + reps);
+    // Die Stufe vor dieser Session — nachher wird verglichen.
+    final stufeVorher = ref.read(gamificationProvider).stufe;
 
     String? savedSessionId;
     if (hasData && _repsMap.values.any((reps) => reps > 0)) {
@@ -184,6 +188,13 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     context.go('/');
 
     if (!hasData) return;
+
+    // Stufenaufstieg feiern, bevor die Meldung kommt — sonst liegt die
+    // Meldung hinter dem Overlay.
+    final stufeNachher = ref.read(gamificationProvider).stufe;
+    if (stufeNachher > stufeVorher && mounted) {
+      await zeigeStufenaufstieg(context, stufeNachher);
+    }
 
     // Die Meldung folgt dem Wechsel auf die Startseite.
     WidgetsBinding.instance.addPostFrameCallback((_) {
