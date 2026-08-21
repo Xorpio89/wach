@@ -7,6 +7,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../exercise/presentation/providers/exercise_providers.dart';
+import '../../../exercise/domain/ziel_anhebung.dart';
+import '../../../exercise/presentation/providers/ziel_anhebung_provider.dart';
+import '../../../exercise/presentation/widgets/target_bump_sheet.dart';
 import '../../../gamification/presentation/widgets/gamification_bar.dart';
 import '../../../workout/presentation/providers/session_providers.dart';
 import '../../../workout/presentation/providers/timer_provider.dart';
@@ -109,6 +112,11 @@ class HomeScreen extends ConsumerWidget {
                       // Fortschritt beim Oeffnen als Erstes ins Auge faellt.
                       const GamificationBar(),
                       const SizedBox(height: AppConstants.spacingMd),
+
+                      // Hinweis auf zu niedrige Ziele — antippbar, nie im
+                      // Weg. Nach dem Beenden soll nichts erscheinen, was
+                      // erst weggetippt werden muss.
+                      const _ZielAnhebungHinweis(),
 
                       // Quick Start Card
                       Builder(
@@ -502,6 +510,68 @@ class _HistoryCard extends StatelessWidget {
               size: 20,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Zeile, die auf zu niedrige Ziele hinweist.
+///
+/// Erscheint nur, wenn es etwas anzuheben gibt, und oeffnet beim Antippen
+/// die Auswahl. Bewusst hier und nicht nach dem Beenden: dort wuerde sie
+/// einem zweiten Durchgang im Weg stehen.
+class _ZielAnhebungHinweis extends ConsumerWidget {
+  const _ZielAnhebungHinweis();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final vorschlaege = ref.watch(zielAnhebungenProvider);
+    if (vorschlaege.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppConstants.spacingMd),
+      child: InkWell(
+        onTap: () => zeigeZielAnhebung(context, vorschlaege),
+        borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.spacingMd,
+            vertical: AppConstants.spacingSm,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.secondary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+            border: Border.all(
+              color: AppColors.secondary.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.trending_up_rounded,
+                size: 18,
+                color: AppColors.secondary,
+              ),
+              const SizedBox(width: AppConstants.spacingSm),
+              Expanded(
+                child: Text(
+                  l10n.targetBumpHint(vorschlaege.length),
+                  style: AppTypography.labelSmall.copyWith(
+                    color: AppColors.secondary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: AppColors.secondary,
+              ),
+            ],
+          ),
         ),
       ),
     );

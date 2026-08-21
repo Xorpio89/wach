@@ -62,7 +62,14 @@ void main() {
   });
 
   test('Platzhalter stimmen zwischen den Sprachen ueberein', () {
-    final placeholder = RegExp(r'\{(\w+)');
+    // Ein Platzhalter ist ein Wort, auf das direkt `}` folgt ("{count}")
+    // oder ein Komma ("{count, plural, ...}").
+    //
+    // Ohne die Einschraenkung fing das Muster auch den Anfang eines
+    // Plural-Zweigs: aus `one{Ein Ziel ...}` wurde der "Platzhalter" Ein,
+    // und derselbe Text auf Englisch ("One target ...") galt damit als
+    // unvereinbar — obwohl beide denselben Platzhalter benutzen.
+    final placeholder = RegExp(r'\{(\w+)[,}]');
 
     for (final key in messageKeys(de)) {
       if (key == '@@locale' || !en.containsKey(key)) continue;
