@@ -64,6 +64,48 @@ verweisen auf die Vorlage, mit der sie gefahren wurden.
 **Vorschlag:** mit Weg A anfangen. Er bringt den Nutzen sofort und ist die
 Voraussetzung für B, falls benannte Vorlagen später gewünscht sind.
 
+## Gruppierung: was ist „dasselbe Workout"?
+
+Der entscheidende Punkt für die Auswahl. Ein Beispiel aus der Praxis:
+
+| Session | Ergebnis | Warum |
+| --- | --- | --- |
+| Mo | 50 Klimmzüge | Ziel geschafft |
+| Do | 53 Klimmzüge | ein paar mehr gemacht |
+| Sa | 35 Klimmzüge | abgebrochen |
+
+Das sind **drei Durchgänge desselben Workouts**, nicht drei verschiedene.
+Eine Auswahlliste, die sie einzeln aufführt, ist unbrauchbar — nach
+wenigen Wochen stehen dort dreißig Einträge, die alle „Klimmzüge" heißen.
+
+**Gruppiert wird nach dem Ziel, nicht nach dem Ergebnis.** Der Schlüssel
+einer Gruppe ist die Menge der Paare aus Übung und Ziel:
+
+```
+{ (Klimmzüge, 50) }                      -> "50 Klimmzüge"
+{ (Dips, 100), (Klimmzüge, 100) }        -> "100 Dips + 100 Klimmzüge"
+{ (Liegestütze, 200) }                   -> "200 Liegestütze"
+```
+
+Damit landen 50, 53 und 35 in derselben Gruppe, weil das Ziel jedes Mal 50
+war. Je Gruppe zeigt die Liste dann einen Eintrag mit Bestzeit und Anzahl
+der Durchgänge.
+
+Das ist zugleich das stärkste Argument dafür, die Ziele in der Session
+mitzuschreiben (Weg A oben): **ohne sie ist diese Gruppierung nicht
+möglich.** Man müsste die Ergebnisse zusammenfassen — 50 und 53 lägen
+vielleicht noch beieinander, 35 wäre nicht mehr zuzuordnen, und die Grenze
+wäre reine Willkür.
+
+### Was in eine Gruppe gehört und was nicht
+
+- Dieselben Übungen mit denselben Zielen — eine Gruppe, egal wie das
+  Ergebnis ausfiel
+- Dieselbe Übung mit anderem Ziel (50 vs. 100 Klimmzüge) — zwei Gruppen,
+  denn es sind unterschiedlich schwere Vorhaben
+- Eine Übung mehr oder weniger — zwei Gruppen, sonst wäre die Bestzeit
+  nicht vergleichbar
+
 ## Offene Punkte
 
 - **Was passiert mit der laufenden Übungsliste?** Wählt man eine Session
@@ -74,13 +116,16 @@ Voraussetzung für B, falls benannte Vorlagen später gewünscht sind.
   denselben Übungen und Zielen — oder die letzte? Bei „gegen mich selbst
   antreten" ist die Bestzeit die interessantere Zahl, die letzte die
   fairere.
-- **Wie werden Sessions in der Auswahl benannt?** Aus den Übungen
-  gebildet („200 Liegestütze", „100 Dips + 100 Klimmzüge") oder frei
-  benennbar. Automatisch gebildet ist weniger Arbeit, wird bei vielen
-  Übungen aber unlesbar.
-- **Wie viele Einträge zeigt die Auswahl?** Der Verlauf wächst; sinnvoll
-  wäre eine Zusammenfassung gleicher Zusammenstellungen mit ihrer
-  Bestzeit statt jeder einzelnen Session.
+- **Wie werden Gruppen benannt?** Aus Übungen und Zielen gebildet („200
+  Liegestütze", „100 Dips + 100 Klimmzüge") oder frei benennbar.
+  Automatisch gebildet ist weniger Arbeit, wird ab drei Übungen aber
+  unlesbar — dann wäre ein Kurzname nötig.
+- **Zählt eine abgebrochene Session in die Bestzeit?** Wer 35 von 50
+  geschafft hat, war vielleicht schnell, aber nicht fertig. Für die
+  Bestzeit sollten nur Durchgänge zählen, die das Ziel erreicht haben —
+  sonst gewinnt der Abbruch.
+- **Wie viele Gruppen zeigt die Auswahl?** Sinnvoll wären die zuletzt
+  benutzten, nicht alle.
 
 ## Reihenfolge auf dem Startbildschirm
 
