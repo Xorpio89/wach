@@ -174,6 +174,18 @@ Future<void> passRealTime(
   }
 }
 
+/// Die Meldung nach dem Beenden ablaufen lassen.
+///
+/// Sie schliesst sich ueber einen eigenen Zeitgeber. Endet ein Test,
+/// waehrend der noch laeuft, meldet das Testgeruest einen offenen
+/// Zeitgeber — deshalb hier abwarten. In Schritten, damit die
+/// Einblend-Bewegung vorher durchlaeuft.
+Future<void> meldungAbwarten(WidgetTester tester) async {
+  for (var i = 0; i < 8; i++) {
+    await tester.pump(const Duration(seconds: 1));
+  }
+}
+
 /// Eine feste Anzahl Bilder zeichnen, ohne auf Ruhe zu warten.
 ///
 /// Notwendig, sobald die Uhr laeuft: `pumpAndSettle` wartet darauf, dass

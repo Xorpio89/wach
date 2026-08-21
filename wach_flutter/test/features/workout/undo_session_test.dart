@@ -63,6 +63,30 @@ void main() {
     await settleAsync(tester);
   }
 
+  testWidgets('die Meldung verschwindet von selbst wieder', (tester) async {
+    usePortraitSurface(tester);
+    await tester.pumpWidget(wrapAppForTest());
+    await settleAsync(tester);
+
+    await workoutBeenden(tester);
+
+    expect(find.text('Rückgängig'), findsOneWidget);
+
+    // In Schritten, nicht in einem Sprung: die Einblend-Bewegung muss
+    // erst durchlaufen, denn erst danach startet der Ausblende-Zeitgeber.
+    // Ein einzelnes `pump` ueber zehn Sekunden wuerde beides in denselben
+    // Zeitpunkt legen und die Meldung faelschlich als haengend melden.
+    for (var i = 0; i < 15; i++) {
+      await tester.pump(const Duration(seconds: 1));
+    }
+
+    expect(
+      find.text('Rückgängig'),
+      findsNothing,
+      reason: 'Die Meldung darf nicht dauerhaft stehen bleiben',
+    );
+  });
+
   testWidgets('Rueckgaengig holt die Session zurueck', (tester) async {
     usePortraitSurface(tester);
     await tester.pumpWidget(wrapAppForTest());

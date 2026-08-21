@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -72,6 +73,9 @@ class WorkoutScreen extends ConsumerStatefulWidget {
   @override
   ConsumerState<WorkoutScreen> createState() => _WorkoutScreenState();
 }
+
+/// Wie lange die Meldung nach dem Beenden stehen bleibt.
+const Duration _meldungsdauer = Duration(seconds: 6);
 
 class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
   // 2026-08-07 Bugfix: Reps liegen jetzt im app-weiten activeRepsProvider
@@ -181,11 +185,39 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
 
     if (!hasData) return;
 
+    // Die Meldung folgt dem Wechsel auf die Startseite.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _zeigeAbschlussMeldung(
+        messenger,
+        l10n,
+        savedSessionId: savedSessionId,
+        verdientePunkte: verdientePunkte,
+        container: container,
+        previousReps: previousReps,
+        previousElapsed: previousElapsed,
+        previousTarget: previousTarget,
+        previousStart: previousStart,
+      );
+    });
+  }
+
+  /// Die Meldung nach dem Beenden, samt "Rueckgaengig".
+  static void _zeigeAbschlussMeldung(
+    ScaffoldMessengerState messenger,
+    AppLocalizations l10n, {
+    required String? savedSessionId,
+    required int verdientePunkte,
+    required ProviderContainer container,
+    required Map<String, int> previousReps,
+    required Duration previousElapsed,
+    required Duration? previousTarget,
+    required DateTime? previousStart,
+  }) {
     messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
+    final gezeigt = messenger.showSnackBar(
       SnackBar(
         backgroundColor: AppColors.surfaceVariant,
-        duration: const Duration(seconds: 6),
+        duration: _meldungsdauer,
         content: Text(
           savedSessionId != null
               // Die verdienten Punkte gleich mitnennen — sonst muesste man
@@ -210,6 +242,22 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
         ),
       ),
     );
+
+    // Selbst schliessen, statt sich auf den eingebauten Zeitgeber zu
+    // verlassen.
+    //
+    // Der startet in Flutter erst, wenn die Einblend-Bewegung durch ist.
+    // Weil hier gleichzeitig der Bildschirm wechselt und dabei das
+    // Scaffold ausgetauscht wird, an dem die Meldung haengt, kam die
+    // Bewegung nie zum Abschluss — die Meldung blieb dauerhaft stehen. Ein
+    // Vorsprung von einem Bild oder von der Dauer des Uebergangs hat daran
+    // nichts geaendert, deshalb dieser Weg.
+    //
+    // Der Zeitgeber wird abgeraeumt, sobald die Meldung weg ist — durch
+    // "Rueckgaengig", durch Wegtippen oder durch ihn selbst. Sonst laeuft
+    // er ins Leere weiter und wuerde eine spaetere Meldung schliessen.
+    final zeitgeber = Timer(_meldungsdauer, messenger.hideCurrentSnackBar);
+    gezeigt.closed.whenComplete(zeitgeber.cancel);
   }
 
   /// Ein beendetes Workout zurueckholen: gespeicherte Session wieder

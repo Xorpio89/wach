@@ -136,6 +136,7 @@ void main() {
     // --- Beenden ---
     await tester.tap(find.text('Workout beenden'));
     await settleAsync(tester);
+    await meldungAbwarten(tester);
 
     // Zurueck auf der Startseite.
     expect(find.text('Workout starten'), findsOneWidget);
@@ -191,6 +192,7 @@ void main() {
     await pumpFrames(tester);
     await tester.tap(find.text('Workout beenden'));
     await settleAsync(tester);
+    await meldungAbwarten(tester);
 
     // Erneut hinein: die Reps der abgeschlossenen Session duerfen nicht
     // mehr dastehen, sonst zaehlt man beim naechsten Mal weiter.
@@ -232,6 +234,7 @@ void main() {
     await pumpFrames(tester);
     await tester.tap(find.text('Workout beenden'));
     await settleAsync(tester);
+    await meldungAbwarten(tester);
 
     final session = (await gespeicherteSessions(tester)).single;
     final dauer = session.finishedAt.difference(session.startedAt);
@@ -260,6 +263,7 @@ void main() {
 
     await tester.tap(find.text('Workout beenden'));
     await settleAsync(tester);
+    await meldungAbwarten(tester);
 
     expect(
       await gespeicherteSessions(tester),
