@@ -7,7 +7,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../exercise/presentation/providers/exercise_providers.dart';
-import '../../../exercise/domain/ziel_anhebung.dart';
 import '../../../exercise/presentation/providers/ziel_anhebung_provider.dart';
 import '../../../exercise/presentation/widgets/target_bump_sheet.dart';
 import '../../../gamification/presentation/widgets/gamification_bar.dart';
