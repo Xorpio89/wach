@@ -19,9 +19,9 @@ abstract final class AppConstants {
   );
   static const isBeta = true;
 
-  // Feedback
-  // TODO: Google-Form-Link (oder anderen Feedback-Link) hier eintragen.
-  static const feedbackUrl = '';
+  // Rueckmeldungen laufen ueber lib/features/feedback/ — erfasst wird im
+  // Geraet, weitergegeben ueber ein vorbereitetes Formular. Wohin, steht
+  // in FeedbackBericht.projekt.
 
   // UI Constants
   static const maxTilesPerPage = 5;

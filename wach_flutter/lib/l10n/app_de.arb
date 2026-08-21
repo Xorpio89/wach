@@ -98,23 +98,43 @@
   "exerciseShowLessSuggestions": "Weniger anzeigen",
   "gamificationLevel": "Stufe {level}",
   "@gamificationLevel": {
-    "placeholders": { "level": { "type": "int" } }
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
   },
   "gamificationToNextLevel": "noch {points} Punkte",
   "@gamificationToNextLevel": {
-    "placeholders": { "points": { "type": "int" } }
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
   },
   "gamificationStreak": "{days, plural, one{{days} Tag in Folge} other{{days} Tage in Folge}}",
   "@gamificationStreak": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "gamificationPointsEarned": "+{points} Punkte",
   "@gamificationPointsEarned": {
-    "placeholders": { "points": { "type": "int" } }
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
   },
   "gamificationLevelUp": "Stufe {level} erreicht!",
   "@gamificationLevelUp": {
-    "placeholders": { "level": { "type": "int" } }
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
   },
   "achievementsTitle": "Fortschritt",
   "achievementsTooltip": "Fortschritt und Abzeichen",
@@ -123,13 +143,21 @@
   "achievementsStreakLabel": "Serie",
   "achievementsDays": "{days, plural, one{{days} Tag} other{{days} Tage}}",
   "@achievementsDays": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "achievementsBadges": "Abzeichen",
   "achievementsLevels": "Stufen",
   "achievementsLevelAt": "ab {points} Punkten",
   "@achievementsLevelAt": {
-    "placeholders": { "points": { "type": "int" } }
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
   },
   "achievementsNothingYet": "Beende ein Workout, dann geht es los.",
   "badgeStartedName": "Angefangen",
@@ -140,7 +168,11 @@
   "badgeOneWeekHint": "Sieben Tage in Folge trainiert",
   "targetBumpHint": "{count, plural, one{Ein Ziel koennte hoeher} other{{count} Ziele koennten hoeher}}",
   "@targetBumpHint": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "targetBumpTitle": "Ziele anheben?",
   "targetBumpExplain": "Diese Ziele hast du dreimal hintereinander erreicht.",
@@ -185,8 +217,6 @@
   "settingsBetaSubtitle": "Diese App ist in Entwicklung — Feedback willkommen!",
   "settingsFeedbackTitle": "Feedback geben",
   "settingsFeedbackSubtitle": "Fehler melden oder Idee teilen",
-  "settingsFeedbackMissing": "Feedback-Link ist noch nicht hinterlegt",
-  "settingsFeedbackFailed": "Konnte Feedback-Formular nicht öffnen",
   "settingsAutoStartTitle": "Timer automatisch starten",
   "settingsAutoStartSubtitle": "Timer beim ersten Rep starten",
   "settingsAutoStartError": "Einstellung konnte nicht geladen werden",
@@ -317,5 +347,24 @@
   "commonReps": "Reps",
   "battleTemplateLabel": "Vorlagen",
   "workoutLockHintGesture": "(lange drücken)",
-  "workoutTapHint": "Kachel antippen zum Zählen"
+  "workoutTapHint": "Kachel antippen zum Zählen",
+  "feedbackTitle": "Feedback",
+  "feedbackNeuLabel": "Was ist dir aufgefallen?",
+  "feedbackNeuHint": "Kurz notieren — Einzelheiten kannst du später ergänzen",
+  "feedbackArtFehler": "Fehler",
+  "feedbackArtIdee": "Idee",
+  "feedbackArtSonstiges": "Sonstiges",
+  "feedbackNotieren": "Notieren",
+  "feedbackNotiertMeldung": "Notiert",
+  "feedbackMelden": "Melden",
+  "feedbackMeldenHinweis": "Melden öffnet ein vorbereitetes Formular. Abschicken musst du selbst.",
+  "feedbackGemeldet": "Gemeldet",
+  "feedbackOeffnenFehler": "Das Formular ließ sich nicht öffnen",
+  "feedbackKopieren": "Als Text kopieren",
+  "feedbackKopiert": "In die Zwischenablage kopiert",
+  "feedbackLoeschen": "Löschen",
+  "feedbackLeerTitel": "Noch keine Rückmeldungen",
+  "feedbackLeerText": "Notiere, was dir beim Training auffällt. Das geht auch ohne Netz.",
+  "feedbackListeTitel": "Notiert",
+  "feedbackOffeneAnzahl": "{count, plural, one{1 offen} other{{count} offen}}"
 }

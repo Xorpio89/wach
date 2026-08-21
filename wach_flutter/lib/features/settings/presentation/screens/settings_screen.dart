@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/navigation/app_router.dart';
 import '../../../exercise/presentation/providers/exercise_providers.dart';
+import '../../../feedback/presentation/providers/feedback_providers.dart';
 import '../../data/settings_provider.dart';
 import '../../data/locale_provider.dart';
 import '../../data/sync_provider.dart';
@@ -95,29 +96,10 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _openFeedback(BuildContext context) async {
-    final l10n = AppLocalizations.of(context);
-    const url = AppConstants.feedbackUrl;
-    if (url.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.settingsFeedbackMissing)),
-      );
-      return;
-    }
-    final ok = await launchUrl(
-      Uri.parse(url),
-      mode: LaunchMode.externalApplication,
-    );
-    if (!ok && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.settingsFeedbackFailed)),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final offeneNotizen = ref.watch(offeneFeedbackAnzahlProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -160,12 +142,21 @@ class SettingsScreen extends ConsumerWidget {
             iconColor: AppColors.primary,
             title: l10n.settingsFeedbackTitle,
             subtitle: l10n.settingsFeedbackSubtitle,
-            trailing: const Icon(
-              Icons.open_in_new_rounded,
-              size: 18,
-              color: AppColors.textSecondary,
-            ),
-            onTap: () => _openFeedback(context),
+            // Zeigt an, was notiert, aber noch nicht weitergegeben wurde —
+            // sonst bleibt es unbemerkt liegen.
+            trailing: offeneNotizen > 0
+                ? Text(
+                    l10n.feedbackOffeneAnzahl(offeneNotizen),
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.secondary,
+                    ),
+                  )
+                : const Icon(
+                    Icons.chevron_right_rounded,
+                    size: 18,
+                    color: AppColors.textSecondary,
+                  ),
+            onTap: () => context.pushNamed(Routes.feedback),
           ),
 
           const SizedBox(height: AppConstants.spacingLg),
