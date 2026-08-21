@@ -143,6 +143,60 @@ Anzahl mit und stehen im Verlauf. Nur für die Bestzeit werden sie
 - **Wie viele Gruppen zeigt die Auswahl?** Sinnvoll wären die zuletzt
   benutzten, nicht alle.
 
+## Ziele anheben nach Übererfüllung
+
+**Offen — braucht eine Entscheidung, weil es die Gruppierung betrifft.**
+
+Idee: Hat man das Ziel übertroffen (50 vorgegeben, 55 geschafft), beim
+Beenden anbieten, das Ziel auf 55 zu setzen. Bei mehreren Übungen kompakt
+als Liste, mit „alle anheben" als Sammelaktion.
+
+Das passt zum Kern der App — Progressive Overload heißt, Ziele anzuheben —
+und der Moment ist der beste: gerade jetzt weiß man, dass mehr ging.
+
+### Warum es nicht einfach dazukommen kann
+
+**Es zersplittert die Gruppierung.** Wandert das Ziel von 50 auf 55, ist
+der nächste Durchgang eine andere Gruppe. Nach ein paar Anhebungen stehen
+dort fünf Gruppen mit je einem Durchgang, und keine hat eine belastbare
+Bestzeit — genau die Vergleichbarkeit, für die nach Zielen gruppiert wird,
+geht verloren.
+
+Das verschiebt die Abwägung oben zu **Weg B**: eine benannte Vorlage
+(„Klimmzüge"), deren Ziel sich über die Zeit entwickelt. Dann bleibt die
+Historie zusammen, und die Zielentwicklung wird sogar sichtbar — aus
+„50 → 55 → 60" liest man Fortschritt ab, aus drei getrennten Gruppen
+nicht.
+
+### Und nicht als Dialog beim Beenden
+
+Beim Beenden steht bewusst nichts im Weg: die frühere Rückfrage ist
+entfallen, die Level-Up-Feier ist ein Overlay und kein Dialog. Ein
+Auswahldialog wäre ein Rückschritt — besonders bei einer Wiederholung
+Unterschied.
+
+Dazu: Übererfüllung ist oft Zufall. 53 statt 50, weil der letzte Satz voll
+gemacht wurde. Das ist kein Signal.
+
+**Vorschlag:** erst bei **wiederholter** Übererfüllung fragen — etwa
+dreimal in Folge Ziel erreicht oder übertroffen — und dann als antippbarer
+Hinweis statt als Sperre. Das trifft die Fälle, in denen wirklich mehr
+geht, und schweigt bei Ausrutschern.
+
+Bei mehreren Übungen dann eine Liste mit Schaltern:
+
+```
+┌────────────────────────────────────┐
+│  Ziele anheben?                    │
+│                                    │
+│  Klimmzüge      50 → 55      [✓]   │
+│  Dips          100 → 105     [✓]   │
+│  Liegestütze   100 → 100     [ ]   │
+│                                    │
+│  [ Übernehmen ]      [ Später ]    │
+└────────────────────────────────────┘
+```
+
 ## Reihenfolge auf dem Startbildschirm
 
 Frisch anfangen steht unten — es ist der seltenste Fall und der einzige,
