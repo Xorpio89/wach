@@ -10,7 +10,7 @@ void main() {
   var laufendeNummer = 0;
 
   /// Eine beendete Session mit [reps] Wiederholungen an [tag].
-  SessionModel session(int reps, {DateTime? tag}) {
+  SessionModel session(int reps, {DateTime? tag, int? ziel}) {
     final ende = tag ?? DateTime(2026, 8, 17, 18);
     return SessionModel(
       id: 'session-${laufendeNummer++}',
@@ -19,6 +19,7 @@ void main() {
       durationSeconds: 1200,
       exerciseReps: {'pull-ups': reps},
       exerciseNames: const {'pull-ups': 'Pull Ups'},
+      exerciseTargets: ziel == null ? const {} : {'pull-ups': ziel},
     );
   }
 
@@ -46,6 +47,45 @@ void main() {
         exerciseNames: const {'a': 'A', 'b': 'B', 'c': 'C'},
       );
       expect(GamificationStats.aus([gemischt]).punkte, 50);
+    });
+  });
+
+  group('Zielbonus', () {
+    test('ein erreichtes Ziel bringt Wiederholungen plus Bonus', () {
+      // 50 Reps + 25 fuer das Ziel + 50 dafuer, dass alle sassen.
+      final stats = GamificationStats.aus([session(50, ziel: 50)]);
+      expect(stats.punkte, 50 + 25 + 50);
+    });
+
+    test('ein verfehltes Ziel bringt nur die Wiederholungen', () {
+      final stats = GamificationStats.aus([session(35, ziel: 50)]);
+      expect(stats.punkte, 35);
+    });
+
+    test('uebertroffen zaehlt wie erreicht', () {
+      final stats = GamificationStats.aus([session(55, ziel: 50)]);
+      expect(stats.punkte, 55 + 25 + 50);
+    });
+
+    test('nur ein Teil der Ziele erreicht: kein Bonus fuer alle', () {
+      final gemischt = SessionModel(
+        id: 'gemischt',
+        startedAt: DateTime(2026, 8, 17, 17),
+        finishedAt: DateTime(2026, 8, 17, 18),
+        durationSeconds: 3600,
+        exerciseReps: const {'a': 50, 'b': 30},
+        exerciseNames: const {'a': 'A', 'b': 'B'},
+        exerciseTargets: const {'a': 50, 'b': 50},
+      );
+      // 80 Reps + 25 fuer das eine erreichte Ziel, kein Bonus fuer alle.
+      expect(GamificationStats.aus([gemischt]).punkte, 80 + 25);
+    });
+
+    test('Sessions ohne gespeicherte Ziele bekommen keinen Bonus', () {
+      // So sehen Sessions von vor der Schema-Erweiterung aus. Geraten wird
+      // nicht.
+      final stats = GamificationStats.aus([session(50)]);
+      expect(stats.punkte, 50);
     });
   });
 
