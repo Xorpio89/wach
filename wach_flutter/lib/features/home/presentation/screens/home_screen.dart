@@ -40,32 +40,33 @@ class HomeScreen extends ConsumerWidget {
                       Center(
                         child: Column(
                           children: [
-                            // Logo
+                            // Das Logo — dasselbe Zeichen wie das App-Icon
+                            // auf dem Startbildschirm, damit die Marke
+                            // wiedererkennbar ist. Hier stand vorher ein
+                            // allgemeines Material-Icon.
+                            // Bildquelle: design/make_ui_logo.py
                             Container(
-                              width: 80,
-                              height: 80,
+                              width: AppConstants.logoSize,
+                              height: AppConstants.logoSize,
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    AppColors.primary,
-                                    AppColors.primary.withValues(alpha: 0.7),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(20),
+                                // Das Bild bringt Grund und Rundung schon
+                                // mit; der Schimmer setzt es vom dunklen
+                                // Hintergrund ab.
+                                borderRadius: BorderRadius.circular(18),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primary.withValues(alpha: 0.3),
+                                    color:
+                                        AppColors.primary.withValues(alpha: 0.3),
                                     blurRadius: 20,
                                     spreadRadius: 2,
                                   ),
                                 ],
                               ),
-                              child: const Icon(
-                                Icons.fitness_center_rounded,
-                                color: Colors.white,
-                                size: 44,
+                              child: Image.asset(
+                                'assets/logo/wach-icon.png',
+                                width: AppConstants.logoSize,
+                                height: AppConstants.logoSize,
+                                filterQuality: FilterQuality.medium,
                               ),
                             ),
                             const SizedBox(height: AppConstants.spacingMd),

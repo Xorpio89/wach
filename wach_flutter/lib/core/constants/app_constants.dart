@@ -28,6 +28,12 @@ abstract final class AppConstants {
   static const longPressDelayMs = 500;
   static const minTouchTargetSize = 48.0;
 
+  /// Kantenlaenge des Logos im Kopf der Startseite.
+  ///
+  /// Muss zu `BASIS` in `design/make_ui_logo.py` passen — daraus werden die
+  /// Bilddateien in ihren drei Auflösungen erzeugt.
+  static const logoSize = 80.0;
+
   /// Wie hoch eine Uebungskachel hoechstens wird.
   ///
   /// Ohne Obergrenze teilen sich die Kacheln den Platz gleichmaessig auf —

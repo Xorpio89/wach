@@ -58,3 +58,10 @@ flutter:
   uses-material-design: true
   # Erzeugt AppLocalizations aus lib/l10n/*.arb (Konfiguration: l10n.yaml)
   generate: true
+
+  assets:
+    # Das Logo fuer die Oberflaeche. Die Ordner 2.0x und 3.0x daneben
+    # werden von Flutter anhand der Pixeldichte selbst gewaehlt und
+    # brauchen keinen eigenen Eintrag.
+    # Erzeugt von design/make_ui_logo.py
+    - assets/logo/wach-icon.png
