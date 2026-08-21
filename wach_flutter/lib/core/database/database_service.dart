@@ -28,6 +28,10 @@ class DatabaseService {
   // und beim Zurueckkehren neu geladen — die Reps kamen dann aus der
   // Datenbank zurueck, die gelaufene Zeit stand wieder auf null.
   static final activeTimerStore = stringMapStoreFactory.store('active_timer');
+  // 2026-08-21: Rueckmeldungen werden erst im Geraet gesammelt und spaeter
+  // weitergegeben. Beim Training ist oft kein Netz, und ein Einfall
+  // zwischen zwei Saetzen ueberlebt keinen Wechsel in den Browser.
+  static final feedbackStore = stringMapStoreFactory.store('feedback');
 
   /// Get database instance (singleton)
   Future<Database> get database async {

@@ -70,23 +70,43 @@
   "exerciseShowLessSuggestions": "Show less",
   "gamificationLevel": "Level {level}",
   "@gamificationLevel": {
-    "placeholders": { "level": { "type": "int" } }
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
   },
   "gamificationToNextLevel": "{points} points to go",
   "@gamificationToNextLevel": {
-    "placeholders": { "points": { "type": "int" } }
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
   },
   "gamificationStreak": "{days, plural, one{{days} day in a row} other{{days} days in a row}}",
   "@gamificationStreak": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "gamificationPointsEarned": "+{points} points",
   "@gamificationPointsEarned": {
-    "placeholders": { "points": { "type": "int" } }
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
   },
   "gamificationLevelUp": "Level {level} reached!",
   "@gamificationLevelUp": {
-    "placeholders": { "level": { "type": "int" } }
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
   },
   "achievementsTitle": "Progress",
   "achievementsTooltip": "Progress and badges",
@@ -95,13 +115,21 @@
   "achievementsStreakLabel": "Streak",
   "achievementsDays": "{days, plural, one{{days} day} other{{days} days}}",
   "@achievementsDays": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "achievementsBadges": "Badges",
   "achievementsLevels": "Levels",
   "achievementsLevelAt": "from {points} points",
   "@achievementsLevelAt": {
-    "placeholders": { "points": { "type": "int" } }
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
   },
   "achievementsNothingYet": "Finish a workout to get started.",
   "badgeStartedName": "Started",
@@ -112,7 +140,11 @@
   "badgeOneWeekHint": "Trained seven days in a row",
   "targetBumpHint": "{count, plural, one{One target could be higher} other{{count} targets could be higher}}",
   "@targetBumpHint": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "targetBumpTitle": "Raise targets?",
   "targetBumpExplain": "You reached these targets three times in a row.",
@@ -143,8 +175,6 @@
   "settingsBetaSubtitle": "This app is under development — feedback welcome!",
   "settingsFeedbackTitle": "Send feedback",
   "settingsFeedbackSubtitle": "Report a bug or share an idea",
-  "settingsFeedbackMissing": "No feedback link configured yet",
-  "settingsFeedbackFailed": "Could not open the feedback form",
   "settingsAutoStartTitle": "Auto-start timer",
   "settingsAutoStartSubtitle": "Start the timer on the first rep",
   "settingsAutoStartError": "Could not load this setting",
@@ -226,5 +256,24 @@
   "commonReps": "Reps",
   "battleTemplateLabel": "Templates",
   "workoutLockHintGesture": "(long press)",
-  "workoutTapHint": "Tap a tile to count"
+  "workoutTapHint": "Tap a tile to count",
+  "feedbackTitle": "Feedback",
+  "feedbackNeuLabel": "What did you notice?",
+  "feedbackNeuHint": "Jot it down — you can add details later",
+  "feedbackArtFehler": "Bug",
+  "feedbackArtIdee": "Idea",
+  "feedbackArtSonstiges": "Other",
+  "feedbackNotieren": "Save note",
+  "feedbackNotiertMeldung": "Saved",
+  "feedbackMelden": "Report",
+  "feedbackMeldenHinweis": "Reporting opens a prepared form. You still have to submit it.",
+  "feedbackGemeldet": "Reported",
+  "feedbackOeffnenFehler": "Could not open the form",
+  "feedbackKopieren": "Copy as text",
+  "feedbackKopiert": "Copied to clipboard",
+  "feedbackLoeschen": "Delete",
+  "feedbackLeerTitel": "No feedback yet",
+  "feedbackLeerText": "Note what you notice while training. Works offline, too.",
+  "feedbackListeTitel": "Notes",
+  "feedbackOffeneAnzahl": "{count, plural, one{1 open} other{{count} open}}"
 }
