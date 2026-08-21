@@ -37,11 +37,22 @@ Der Wunsch verlangt eine Trennung, die es heute nicht gibt: zwischen
 **Vorlage** (was trainiert werden soll) und **Durchführung** (was
 geschafft wurde). Zwei Möglichkeiten:
 
-### Weg A: Ziele in der Session mitschreiben
+### Weg A: Ziele in der Session mitschreiben — **umgesetzt 2026-08-21**
 
-`SessionModel` bekommt neben `exerciseReps` auch `exerciseTargets`. Dann
+`SessionModel` hat neben `exerciseReps` jetzt auch `exerciseTargets`. Damit
 lässt sich jede vergangene Session als Vorlage wiederverwenden, ohne ein
 neues Konzept einzuführen.
+
+Mitgeliefert wurden zwei Angaben, auf denen die Auswahlliste aufbauen kann:
+
+* `zielErreicht` — ob alle Ziele der Session saßen. Grundlage für die
+  Regel, dass ein Abbruch keine Bestzeit stellt.
+* `zusammenstellung` — Kennzeichen aus Übungen und Zielen. Zwei Sessions
+  mit gleichem Kennzeichen sind Durchgänge desselben Workouts.
+
+Sessions von vor der Erweiterung haben kein Feld: sie gelten als „nicht
+erreicht" und haben kein Kennzeichen, lassen sich also keiner Gruppe
+zuordnen. Geraten wird nicht.
 
 - Klein und nah am Bestehenden
 - Löst zugleich den offenen Zielbonus der Gamification, der genau an

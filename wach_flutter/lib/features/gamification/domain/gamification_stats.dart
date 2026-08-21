@@ -22,10 +22,10 @@ enum Abzeichen {
 /// einer Session zieht die Punkte korrekt ab. Ein zwischengespeicherter
 /// Punktestand muesste all das nachbilden.
 ///
-/// Der Zielbonus aus dem Konzept (`docs/GAMIFICATION.md`) fehlt hier noch:
-/// eine Session haelt nur fest, wie viele Wiederholungen geschafft wurden,
-/// nicht, welches Ziel damals galt. Das braucht zuerst ein erweitertes
-/// Schema — bis dahin zaehlen ausschliesslich Wiederholungen.
+/// Gezaehlt werden Wiederholungen und Ziele, wie in
+/// `docs/GAMIFICATION.md` beschrieben. Sessions von vor der
+/// Schema-Erweiterung haben keine Ziele gespeichert; fuer sie entfaellt
+/// der Bonus, statt ihn zu erraten.
 class GamificationStats {
   /// Gesammelte Punkte insgesamt.
   final int punkte;
@@ -100,8 +100,34 @@ class GamificationStats {
     return stufe;
   }
 
+  /// Bonus fuer eine erreichte Zielvorgabe.
+  static const bonusJeZiel = 25;
+
+  /// Bonus dafuer, alle Ziele einer Session erreicht zu haben.
+  static const bonusAlleZiele = 50;
+
   /// Punkte einer einzelnen Session.
-  static int punkteFuer(SessionModel session) => session.totalReps;
+  ///
+  /// Eine Wiederholung ist ein Punkt, dazu [bonusJeZiel] fuer jedes
+  /// erreichte Ziel und [bonusAlleZiele], wenn alle sassen. Das belohnt
+  /// Zielstrebigkeit statt bloszer Menge — sonst braechte es mehr, eine
+  /// leichte Uebung hochzuzaehlen, als ein Vorhaben durchzuziehen.
+  static int punkteFuer(SessionModel session) {
+    var punkte = session.totalReps;
+
+    final ziele = session.exerciseTargets;
+    if (ziele.isEmpty) return punkte;
+
+    var erreicht = 0;
+    for (final eintrag in ziele.entries) {
+      final geschafft = session.exerciseReps[eintrag.key] ?? 0;
+      if (geschafft >= eintrag.value) erreicht++;
+    }
+
+    punkte += erreicht * bonusJeZiel;
+    if (erreicht == ziele.length) punkte += bonusAlleZiele;
+    return punkte;
+  }
 
   /// Alles aus dem Verlauf ableiten.
   ///

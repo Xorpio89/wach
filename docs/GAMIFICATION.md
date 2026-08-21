@@ -17,7 +17,12 @@ Der entscheidende Punkt für die Umsetzung. Alles Nötige liegt schon in der
 Datenbank — jede beendete Session enthält Datum und Wiederholungen je
 Übung (`SessionModel.exerciseReps`, `startedAt`, `finishedAt`).
 
-Punkte und Stufe werden daher **aus dem Verlauf berechnet, nicht
+**Umgesetzt seit 2026-08-21:** Punkte, Stufen, Serie und Abzeichen sind
+gebaut, der Zielbonus ebenfalls — dafür schreiben Sessions jetzt die
+damals gültigen Ziele mit (`exerciseTargets`). Sessions von vorher haben
+das Feld nicht; für sie entfällt der Bonus, statt ihn zu erraten.
+
+Punkte und Stufe werden **aus dem Verlauf berechnet, nicht
 mitgeführt**. Das erspart eine Datenmigration, kann nicht doppelt zählen,
 übersteht ein „Rückgängig" beim Beenden von selbst und bleibt auch dann
 korrekt, wenn eine Session nachträglich gelöscht wird.

@@ -309,20 +309,25 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     final exercisesAsync = ref.read(exercisesStreamProvider);
     final exercises = exercisesAsync.value ?? [];
 
-    // Build exercise names map
-    final exerciseNames = <String, String>{};
-    for (final exercise in exercises) {
-      if (_repsMap.containsKey(exercise.id)) {
-        exerciseNames[exercise.id] = exercise.name;
-      }
-    }
-
     // Filter to only exercises with reps > 0
     final repsWithData = Map<String, int>.fromEntries(
       _repsMap.entries.where((e) => e.value > 0),
     );
 
     if (repsWithData.isEmpty) return null;
+
+    // Namen und Ziele, wie sie jetzt gelten. Die Ziele gehoeren
+    // ausdruecklich mit in die Session: spaeter laesst sich sonst nicht
+    // mehr sagen, ob 35 Klimmzuege das Vorhaben waren oder ein Abbruch bei
+    // einem Ziel von 50.
+    final exerciseNames = <String, String>{};
+    final exerciseTargets = <String, int>{};
+    for (final exercise in exercises) {
+      if (!repsWithData.containsKey(exercise.id)) continue;
+      exerciseNames[exercise.id] = exercise.name;
+      final ziel = exercise.targetReps;
+      if (ziel != null && ziel > 0) exerciseTargets[exercise.id] = ziel;
+    }
 
     final session = SessionModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -331,6 +336,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
       durationSeconds: timerState.elapsed.inSeconds,
       exerciseReps: repsWithData,
       exerciseNames: exerciseNames,
+      exerciseTargets: exerciseTargets,
     );
 
     try {
