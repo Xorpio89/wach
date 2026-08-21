@@ -185,11 +185,22 @@ class HomeScreen extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Balance for settings button
-                          const SizedBox(width: 48),
+                          // Haelt die Versionsnummer in der Mitte, obwohl
+                          // rechts zwei Knoepfe stehen.
+                          const SizedBox(width: 96),
                           Text(
                             'v${AppConstants.appVersion}',
                             style: AppTypography.labelSmall,
+                          ),
+                          IconButton(
+                            onPressed: () => context.push('/achievements'),
+                            tooltip:
+                                AppLocalizations.of(context)
+                                    .achievementsTooltip,
+                            icon: const Icon(
+                              Icons.military_tech_rounded,
+                              color: AppColors.textSecondary,
+                            ),
                           ),
                           IconButton(
                             onPressed: () => context.push('/settings'),

@@ -88,6 +88,28 @@
   "@gamificationLevelUp": {
     "placeholders": { "level": { "type": "int" } }
   },
+  "achievementsTitle": "Progress",
+  "achievementsTooltip": "Progress and badges",
+  "achievementsPoints": "Points",
+  "achievementsSessions": "Workouts",
+  "achievementsStreakLabel": "Streak",
+  "achievementsDays": "{days, plural, one{{days} day} other{{days} days}}",
+  "@achievementsDays": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "achievementsBadges": "Badges",
+  "achievementsLevels": "Levels",
+  "achievementsLevelAt": "from {points} points",
+  "@achievementsLevelAt": {
+    "placeholders": { "points": { "type": "int" } }
+  },
+  "achievementsNothingYet": "Finish a workout to get started.",
+  "badgeStartedName": "Started",
+  "badgeStartedHint": "First workout completed",
+  "badgeThousandName": "Thousand",
+  "badgeThousandHint": "1,000 reps in total",
+  "badgeOneWeekName": "One week",
+  "badgeOneWeekHint": "Trained seven days in a row",
   "exerciseEmptyTitle": "No exercises yet",
   "exerciseEmptySubtitle": "Add an exercise to get started",
   "sessionHistoryTitle": "Session history",
