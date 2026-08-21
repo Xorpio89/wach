@@ -145,7 +145,9 @@ Anzahl mit und stehen im Verlauf. Nur für die Bestzeit werden sie
 
 ## Ziele anheben nach Übererfüllung
 
-**Offen — braucht eine Entscheidung, weil es die Gruppierung betrifft.**
+**Entschieden (2026-08-21) und umgesetzt:** Vorgeschlagen wird erst nach
+drei Durchgängen in Folge, und zwar als antippbarer Hinweis auf der
+Startseite — nicht als Dialog beim Beenden.
 
 Idee: Hat man das Ziel übertroffen (50 vorgegeben, 55 geschafft), beim
 Beenden anbieten, das Ziel auf 55 zu setzen. Bei mehreren Übungen kompakt
@@ -178,10 +180,23 @@ Unterschied.
 Dazu: Übererfüllung ist oft Zufall. 53 statt 50, weil der letzte Satz voll
 gemacht wurde. Das ist kein Signal.
 
-**Vorschlag:** erst bei **wiederholter** Übererfüllung fragen — etwa
-dreimal in Folge Ziel erreicht oder übertroffen — und dann als antippbarer
-Hinweis statt als Sperre. Das trifft die Fälle, in denen wirklich mehr
-geht, und schweigt bei Ausrutschern.
+**So umgesetzt:** Vorgeschlagen wird, wenn die letzten drei Durchgänge mit
+dieser Übung das Ziel erreicht oder übertroffen haben. Vorgeschlagen wird
+das **schwächste** der drei Ergebnisse — es ist das Niveau, das
+zuverlässig geschafft wird; das beste wäre ein Ausrutscher nach oben.
+
+Durchgänge ohne die Übung werden übersprungen: wer Klimmzüge jedes zweite
+Mal macht, soll nicht benachteiligt werden, weil zwischendurch etwas
+anderes trainiert wurde.
+
+Verglichen wird gegen das **aktuelle** Ziel, nicht gegen das damals
+gültige. Das ist hier kein Mangel, sondern richtig: nach einer Anhebung
+beginnt die Zählung von selbst neu, weil die alten Durchgänge das neue Ziel
+nicht mehr übertreffen.
+
+Die Zersplitterung der Gruppierung bleibt damit bestehen und ist weiter zu
+klären — sie tritt nur seltener ein, weil nicht mehr bei jedem Ausrutscher
+angehoben wird.
 
 Bei mehreren Übungen dann eine Liste mit Schaltern:
 

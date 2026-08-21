@@ -138,6 +138,14 @@
   "badgeThousandHint": "1.000 Wiederholungen insgesamt",
   "badgeOneWeekName": "Eine Woche",
   "badgeOneWeekHint": "Sieben Tage in Folge trainiert",
+  "targetBumpHint": "{count, plural, one{Ein Ziel koennte hoeher} other{{count} Ziele koennten hoeher}}",
+  "@targetBumpHint": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "targetBumpTitle": "Ziele anheben?",
+  "targetBumpExplain": "Diese Ziele hast du dreimal hintereinander erreicht.",
+  "targetBumpApply": "Übernehmen",
+  "targetBumpLater": "Später",
   "exerciseEmptyTitle": "Noch keine Übungen",
   "exerciseEmptySubtitle": "Füge eine Übung hinzu, um zu starten",
   "sessionHistoryTitle": "Session-Verlauf",
