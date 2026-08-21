@@ -97,6 +97,26 @@ möglich.** Man müsste die Ergebnisse zusammenfassen — 50 und 53 lägen
 vielleicht noch beieinander, 35 wäre nicht mehr zuzuordnen, und die Grenze
 wäre reine Willkür.
 
+### Bestzeit: nur vollständige Durchgänge
+
+**Entschieden (2026-08-21):** Wer das Ziel nicht erreicht hat, stellt keine
+Bestzeit auf.
+
+Ohne diese Regel gewinnt der Abbruch: 35 von 50 Klimmzügen sind schneller
+geschafft als 50, und die Bestzeit einer Gruppe würde ausgerechnet von dem
+Durchgang gehalten, der nicht fertig wurde.
+
+Abgebrochene Durchgänge bleiben trotzdem in der Gruppe — sie zählen bei der
+Anzahl mit und stehen im Verlauf. Nur für die Bestzeit werden sie
+übersprungen.
+
+```
+50 Klimmzüge          Bestzeit 5:30 · 3 Durchgänge
+  ├─ Mo  50/50  5:30  ← Bestzeit
+  ├─ Do  53/50  6:12
+  └─ Sa  35/50  4:05  ← zählt nicht, Ziel nicht erreicht
+```
+
 ### Was in eine Gruppe gehört und was nicht
 
 - Dieselben Übungen mit denselben Zielen — eine Gruppe, egal wie das
@@ -120,10 +140,6 @@ wäre reine Willkür.
   Liegestütze", „100 Dips + 100 Klimmzüge") oder frei benennbar.
   Automatisch gebildet ist weniger Arbeit, wird ab drei Übungen aber
   unlesbar — dann wäre ein Kurzname nötig.
-- **Zählt eine abgebrochene Session in die Bestzeit?** Wer 35 von 50
-  geschafft hat, war vielleicht schnell, aber nicht fertig. Für die
-  Bestzeit sollten nur Durchgänge zählen, die das Ziel erreicht haben —
-  sonst gewinnt der Abbruch.
 - **Wie viele Gruppen zeigt die Auswahl?** Sinnvoll wären die zuletzt
   benutzten, nicht alle.
 
