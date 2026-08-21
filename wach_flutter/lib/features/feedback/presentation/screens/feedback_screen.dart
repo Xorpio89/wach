@@ -209,6 +209,9 @@ class _Eingabe extends StatelessWidget {
                   onSelected: (_) => onArt(wahl),
                   avatar: Icon(artZeichen(wahl), size: 16),
                   label: Text(artName(wahl)),
+                  // Ohne dies verdeckt ein Haken das Zeichen der Art. Die
+                  // Auswahl ist an der Faerbung schon zu erkennen.
+                  showCheckmark: false,
                 ),
             ],
           ),
