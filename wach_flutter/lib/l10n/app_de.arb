@@ -398,5 +398,45 @@
   "installIosTitle": "In zwei Schritten",
   "installIosBody": "Safari bietet das nicht von selbst an:\n\n1. Unten auf „Teilen“ tippen\n2. „Zum Home-Bildschirm“ wählen",
   "installIosUnderstood": "Verstanden",
-  "installAlready": "Läuft als eigene App"
+  "installAlready": "Läuft als eigene App",
+  "backupSectionTitle": "Daten mitnehmen",
+  "backupExportTitle": "Daten kopieren",
+  "backupExportSubtitle": "Alles in die Zwischenablage — zum Aufbewahren oder Umziehen",
+  "backupCopied": "{sessions} Workouts und {exercises} Übungen kopiert",
+  "backupImportTitle": "Daten einlesen",
+  "backupImportSubtitle": "Kopierte Daten hier einfügen",
+  "backupImportBody": "Füge den kopierten Text ein. Vorhandenes bleibt unangetastet — schon bekannte Einträge werden übersprungen.",
+  "backupImportHint": "Hier einfügen",
+  "backupImportAction": "Einlesen",
+  "backupImported": "{uebernommen} übernommen, {uebersprungen} schon vorhanden",
+  "backupNothingNew": "Nichts Neues — alle {anzahl} Einträge waren schon da",
+  "backupNotAnExport": "Das ist kein Datenabzug",
+  "backupTooNew": "Der Abzug stammt aus einer neueren Fassung der App",
+  "@backupCopied": {
+    "placeholders": {
+      "sessions": {
+        "type": "int"
+      },
+      "exercises": {
+        "type": "int"
+      }
+    }
+  },
+  "@backupImported": {
+    "placeholders": {
+      "uebernommen": {
+        "type": "int"
+      },
+      "uebersprungen": {
+        "type": "int"
+      }
+    }
+  },
+  "@backupNothingNew": {
+    "placeholders": {
+      "anzahl": {
+        "type": "int"
+      }
+    }
+  }
 }
