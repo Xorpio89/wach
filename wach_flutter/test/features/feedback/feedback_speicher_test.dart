@@ -30,6 +30,22 @@ void main() {
     return container;
   }
 
+  /// Formen und Ablegen in einem Schritt.
+  ///
+  /// In der Oberflaeche ist beides getrennt, damit sich im Browser das
+  /// Formular ohne Wartezeit oeffnen laesst. Fuer diese Tests zaehlt nur,
+  /// was hinterher in der Datenbank steht.
+  Future<FeedbackNotiz> erfasse(
+    ProviderContainer container, {
+    required FeedbackArt art,
+    required String text,
+  }) async {
+    final notifier = container.read(feedbackNotizenProvider.notifier);
+    final notiz = notifier.baue(art: art, text: text);
+    await notifier.lege(notiz);
+    return notiz;
+  }
+
   test('am Anfang ist nichts notiert', () async {
     final container = await behaelter();
     expect(container.read(feedbackNotizenProvider).value, isEmpty);
@@ -39,10 +55,11 @@ void main() {
   test('eine erfasste Notiz erscheint in der Liste', () async {
     final container = await behaelter();
 
-    await container.read(feedbackNotizenProvider.notifier).erfasse(
-          art: FeedbackArt.idee,
-          text: 'Wiederholen aus dem Verlauf waere praktisch',
-        );
+    await erfasse(
+      container,
+      art: FeedbackArt.idee,
+      text: 'Wiederholen aus dem Verlauf waere praktisch',
+    );
 
     final liste = container.read(feedbackNotizenProvider).value!;
     expect(liste, hasLength(1));
@@ -57,9 +74,7 @@ void main() {
   test('Leerzeichen am Rand werden abgeschnitten', () async {
     final container = await behaelter();
 
-    await container
-        .read(feedbackNotizenProvider.notifier)
-        .erfasse(art: FeedbackArt.fehler, text: '  mit Rand  ');
+    await erfasse(container, art: FeedbackArt.fehler, text: '  mit Rand  ');
 
     expect(container.read(feedbackNotizenProvider).value!.single.text,
         'mit Rand');
@@ -68,9 +83,7 @@ void main() {
   test('eine Notiz uebersteht einen Neustart der App', () async {
     // Erster Start: notieren.
     final erster = await behaelter();
-    await erster
-        .read(feedbackNotizenProvider.notifier)
-        .erfasse(art: FeedbackArt.fehler, text: 'Bleibt liegen');
+    await erfasse(erster, art: FeedbackArt.fehler, text: 'Bleibt liegen');
 
     // Zweiter Start: derselbe Datenbestand, neuer Behaelter.
     final zweiter = await behaelter();
@@ -84,11 +97,9 @@ void main() {
     final container = await behaelter();
     final notifier = container.read(feedbackNotizenProvider.notifier);
 
-    final eine = await notifier.erfasse(
-      art: FeedbackArt.fehler,
-      text: 'Erste',
-    );
-    await notifier.erfasse(art: FeedbackArt.idee, text: 'Zweite');
+    final eine =
+        await erfasse(container, art: FeedbackArt.fehler, text: 'Erste');
+    await erfasse(container, art: FeedbackArt.idee, text: 'Zweite');
     expect(container.read(offeneFeedbackAnzahlProvider), 2);
 
     await notifier.markiereGemeldet(eine);
@@ -109,18 +120,28 @@ void main() {
     final notifier = container.read(feedbackNotizenProvider.notifier);
 
     final notiz =
-        await notifier.erfasse(art: FeedbackArt.sonstiges, text: 'Weg damit');
+        await erfasse(container, art: FeedbackArt.sonstiges, text: 'Weg damit');
     await notifier.loesche(notiz.id);
+
+    expect(container.read(feedbackNotizenProvider).value, isEmpty);
+  });
+
+  test('geformt heisst noch nicht abgelegt', () async {
+    // Darauf beruht das Oeffnen ohne Wartezeit: Die Notiz existiert
+    // bereits als Angabe, bevor die Datenbank sie kennt.
+    final container = await behaelter();
+
+    container
+        .read(feedbackNotizenProvider.notifier)
+        .baue(art: FeedbackArt.idee, text: 'Nur geformt');
 
     expect(container.read(feedbackNotizenProvider).value, isEmpty);
   });
 
   test('die neueste Notiz steht oben', () async {
     final container = await behaelter();
-    final notifier = container.read(feedbackNotizenProvider.notifier);
-
-    await notifier.erfasse(art: FeedbackArt.fehler, text: 'Zuerst');
-    await notifier.erfasse(art: FeedbackArt.fehler, text: 'Danach');
+    await erfasse(container, art: FeedbackArt.fehler, text: 'Zuerst');
+    await erfasse(container, art: FeedbackArt.fehler, text: 'Danach');
 
     final liste = container.read(feedbackNotizenProvider).value!;
     expect(liste.first.text, 'Danach');
