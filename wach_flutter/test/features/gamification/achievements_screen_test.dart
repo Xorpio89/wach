@@ -43,7 +43,7 @@ void main() {
     await pumpMitStats(tester, mitFortschritt);
 
     expect(find.text('3'), findsWidgets);
-    expect(find.text('Stufe 3'), findsOneWidget);
+    expect(find.text('Stufe 3 · C-Rang'), findsOneWidget);
     expect(find.text('620'), findsOneWidget);
     expect(find.text('12'), findsOneWidget);
     expect(find.text('4 Tage'), findsOneWidget);
@@ -67,9 +67,12 @@ void main() {
       (tester) async {
     await pumpMitStats(tester, mitFortschritt);
 
-    // Stufe 3 ab 450, Stufe 4 ab 750 — siehe schwelleFuer.
-    expect(find.text('ab 450 Punkten'), findsOneWidget);
-    expect(find.text('ab 750 Punkten'), findsOneWidget);
+    // C-Rang ab 550, B-Rang ab 1100 — siehe schwelleFuer.
+    expect(find.text('ab 550 Punkten'), findsOneWidget);
+    expect(find.text('ab 1100 Punkten'), findsOneWidget);
+    // Die Leiter nennt die Raenge, auf die man zuarbeitet.
+    expect(find.text('B-Rang'), findsOneWidget);
+    expect(find.text('A-Rang'), findsOneWidget);
     // Vergangene Stufen interessieren nicht mehr.
     expect(find.text('ab 200 Punkten'), findsNothing);
   });

@@ -100,11 +100,11 @@
       }
     }
   },
-  "gamificationLevelUp": "Level {level} reached!",
+  "gamificationLevelUp": "{rang} reached!",
   "@gamificationLevelUp": {
     "placeholders": {
-      "level": {
-        "type": "int"
+      "rang": {
+        "type": "String"
       }
     }
   },
@@ -275,5 +275,26 @@
   "feedbackLeerTitel": "No feedback yet",
   "feedbackLeerText": "Note what you notice while training. Works offline, too.",
   "feedbackListeTitel": "Notes",
-  "feedbackOffeneAnzahl": "{count, plural, one{1 open} other{{count} open}}"
+  "feedbackOffeneAnzahl": "{count, plural, one{1 open} other{{count} open}}",
+  "rangE": "E-Rank",
+  "rangD": "D-Rank",
+  "rangC": "C-Rank",
+  "rangB": "B-Rank",
+  "rangA": "A-Rank",
+  "rangS": "S-Rank",
+  "rangNational": "National Level",
+  "rangMonarch": "Monarch",
+  "rangSchattenmonarch": "Shadow Monarch",
+  "rangHerrscher": "Sovereign",
+  "gamificationLevelWithRank": "Level {level} · {rang}",
+  "@gamificationLevelWithRank": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      },
+      "rang": {
+        "type": "String"
+      }
+    }
+  }
 }

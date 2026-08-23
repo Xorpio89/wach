@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import '../../workout/data/models/session_model.dart';
 
 /// Auszeichnungen, die sich allein aus dem Verlauf ergeben.
@@ -74,28 +72,57 @@ class GamificationStats {
   /// Wie viele Punkte noch bis zur naechsten Stufe fehlen.
   int get punkteBisNaechsteStufe => spanneDerStufe - punkteInStufe;
 
+  /// Die Schwellen der benannten Raenge, von E-Rang bis Herrscher.
+  ///
+  /// Gestaltet statt gerechnet: Die ersten Aufstiege kommen schnell, weil
+  /// sie tragen sollen, danach zieht es sich deutlich an. Ein S-Rang, den
+  /// man in zwei Wochen hat, waere nichts wert.
+  ///
+  /// Bei etwa 250 Punkten je gelungenem Workout heisst das: D-Rang nach
+  /// dem ersten, S-Rang nach rund drei Monaten.
+  static const _schwellen = <int>[
+    0, // E-Rang
+    200, // D-Rang
+    550, // C-Rang
+    1100, // B-Rang
+    1900, // A-Rang
+    3000, // S-Rang
+    4800, // National Level
+    7000, // Monarch
+    10200, // Schattenmonarch
+    14000, // Herrscher
+  ];
+
+  /// Abstand von der letzten Schwelle zur naechsten dahinter.
+  static const _abstandDanach = 3800;
+
+  /// Um wie viel jeder weitere Abstand jenseits der Raenge waechst.
+  static const _zuwachsDanach = 1000;
+
   /// Punkte, ab denen [stufe] erreicht ist.
   ///
-  /// Die Abstaende wachsen um 50 Punkte je Stufe: 200, 250, 300, …
   /// Siehe `docs/GAMIFICATION.md`.
   static int schwelleFuer(int stufe) {
     if (stufe <= 1) return 0;
-    return 25 * stufe * stufe + 125 * stufe - 150;
+    if (stufe <= _schwellen.length) return _schwellen[stufe - 1];
+
+    // Jenseits der benannten Raenge waechst jeder Abstand weiter.
+    final darueber = stufe - _schwellen.length;
+    return _schwellen.last +
+        _abstandDanach * darueber +
+        _zuwachsDanach * darueber * (darueber + 1) ~/ 2;
   }
 
   /// Die zu [punkte] gehoerende Stufe.
   static int stufeFuer(int punkte) {
     if (punkte <= 0) return 1;
-    // Umkehrung von `schwelleFuer`. Der anschliessende Abgleich faengt
-    // Rundungsfehler der Wurzel ab, statt sich auf sie zu verlassen.
-    final geschaetzt =
-        ((-125 + math.sqrt(100.0 * punkte + 30625)) / 50).floor();
-    var stufe = math.max(1, geschaetzt);
+    // Hochzaehlen statt umkehren: Die Schwellen stehen zum Teil in einer
+    // Tabelle, die sich nicht als Formel umstellen laesst. Weil sie
+    // quadratisch wachsen, sind es auch bei sehr vielen Punkten nur
+    // wenige Schritte.
+    var stufe = 1;
     while (schwelleFuer(stufe + 1) <= punkte) {
       stufe++;
-    }
-    while (stufe > 1 && schwelleFuer(stufe) > punkte) {
-      stufe--;
     }
     return stufe;
   }

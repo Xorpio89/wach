@@ -5,6 +5,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../rang_text.dart';
 import '../../domain/gamification_stats.dart';
 import '../providers/gamification_provider.dart';
 
@@ -94,7 +95,7 @@ class _StufenKopf extends StatelessWidget {
           ),
         ),
         Text(
-          l10n.gamificationLevel(stats.stufe),
+          l10n.gamificationLevelWithRank(stats.stufe, rangText(l10n, stats.stufe)),
           style: AppTypography.bodyMedium.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -305,16 +306,20 @@ class _StufenZeile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
-          SizedBox(
-            width: 32,
+          // Der Rang statt der Ziffer: Man soll sehen, worauf man
+          // zuarbeitet, nicht welche Zahl als naechstes kommt.
+          Expanded(
             child: Text(
-              '$stufe',
+              rangText(l10n, stufe),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: AppTypography.bodyMedium.copyWith(
                 color: istAktuell ? AppColors.primary : AppColors.textSecondary,
                 fontWeight: istAktuell ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ),
+          const SizedBox(width: AppConstants.spacingSm),
           Text(
             l10n.achievementsLevelAt(schwelle),
             style: AppTypography.labelSmall.copyWith(

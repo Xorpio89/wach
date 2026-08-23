@@ -128,11 +128,11 @@
       }
     }
   },
-  "gamificationLevelUp": "Stufe {level} erreicht!",
+  "gamificationLevelUp": "{rang} erreicht!",
   "@gamificationLevelUp": {
     "placeholders": {
-      "level": {
-        "type": "int"
+      "rang": {
+        "type": "String"
       }
     }
   },
@@ -366,5 +366,26 @@
   "feedbackLeerTitel": "Noch keine Rückmeldungen",
   "feedbackLeerText": "Notiere, was dir beim Training auffällt. Das geht auch ohne Netz.",
   "feedbackListeTitel": "Notiert",
-  "feedbackOffeneAnzahl": "{count, plural, one{1 offen} other{{count} offen}}"
+  "feedbackOffeneAnzahl": "{count, plural, one{1 offen} other{{count} offen}}",
+  "rangE": "E-Rang",
+  "rangD": "D-Rang",
+  "rangC": "C-Rang",
+  "rangB": "B-Rang",
+  "rangA": "A-Rang",
+  "rangS": "S-Rang",
+  "rangNational": "National Level",
+  "rangMonarch": "Monarch",
+  "rangSchattenmonarch": "Schattenmonarch",
+  "rangHerrscher": "Herrscher",
+  "gamificationLevelWithRank": "Stufe {level} · {rang}",
+  "@gamificationLevelWithRank": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      },
+      "rang": {
+        "type": "String"
+      }
+    }
+  }
 }
