@@ -307,5 +307,45 @@
   "installIosTitle": "Two steps",
   "installIosBody": "Safari does not offer this by itself:\n\n1. Tap “Share” at the bottom\n2. Choose “Add to Home Screen”",
   "installIosUnderstood": "Got it",
-  "installAlready": "Running as its own app"
+  "installAlready": "Running as its own app",
+  "backupSectionTitle": "Take your data along",
+  "backupExportTitle": "Copy data",
+  "backupExportSubtitle": "Everything to the clipboard — to keep or to move",
+  "backupCopied": "Copied {sessions} workouts and {exercises} exercises",
+  "backupImportTitle": "Read data in",
+  "backupImportSubtitle": "Paste copied data here",
+  "backupImportBody": "Paste the copied text. Nothing existing is touched — entries already known are skipped.",
+  "backupImportHint": "Paste here",
+  "backupImportAction": "Read in",
+  "backupImported": "{uebernommen} taken over, {uebersprungen} already present",
+  "backupNothingNew": "Nothing new — all {anzahl} entries were already there",
+  "backupNotAnExport": "That is not a data export",
+  "backupTooNew": "The export comes from a newer version of the app",
+  "@backupCopied": {
+    "placeholders": {
+      "sessions": {
+        "type": "int"
+      },
+      "exercises": {
+        "type": "int"
+      }
+    }
+  },
+  "@backupImported": {
+    "placeholders": {
+      "uebernommen": {
+        "type": "int"
+      },
+      "uebersprungen": {
+        "type": "int"
+      }
+    }
+  },
+  "@backupNothingNew": {
+    "placeholders": {
+      "anzahl": {
+        "type": "int"
+      }
+    }
+  }
 }

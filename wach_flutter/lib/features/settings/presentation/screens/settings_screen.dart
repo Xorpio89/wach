@@ -11,6 +11,7 @@ import '../../../exercise/presentation/providers/exercise_providers.dart';
 import '../../../feedback/presentation/providers/feedback_providers.dart';
 import '../../../installation/presentation/installation_provider.dart';
 import '../../../installation/presentation/installation_widgets.dart';
+import '../../../sicherung/presentation/sicherung_widgets.dart';
 import '../../data/settings_provider.dart';
 import '../../data/locale_provider.dart';
 import '../../data/sync_provider.dart';
@@ -195,6 +196,27 @@ class SettingsScreen extends ConsumerWidget {
           // Quick Add Chips Section
           _SectionHeader(title: l10n.settingsSectionQuickChips),
           _QuickChipsSettings(),
+
+          const SizedBox(height: AppConstants.spacingLg),
+
+          // Daten mitnehmen. Der Browser bindet gespeicherte Daten an die
+          // Adresse der Seite — ohne diesen Weg blieben sie beim Umzug auf
+          // eine andere Adresse zurueck.
+          _SectionHeader(title: l10n.backupSectionTitle),
+          _SettingsTile(
+            icon: Icons.content_copy_rounded,
+            iconColor: AppColors.primary,
+            title: l10n.backupExportTitle,
+            subtitle: l10n.backupExportSubtitle,
+            onTap: () => abzugKopieren(context, ref),
+          ),
+          _SettingsTile(
+            icon: Icons.content_paste_rounded,
+            iconColor: AppColors.secondary,
+            title: l10n.backupImportTitle,
+            subtitle: l10n.backupImportSubtitle,
+            onTap: () => abzugEinlesen(context, ref),
+          ),
 
           const SizedBox(height: AppConstants.spacingLg),
 
