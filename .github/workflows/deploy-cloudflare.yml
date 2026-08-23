@@ -1,0 +1,81 @@
+name: Deploy to Cloudflare Pages
+
+# Warum neben dem GitHub-Pages-Ablauf ein zweiter: GitHub Pages liefert nur
+# aus oeffentlichen Projekten, solange nichts bezahlt wird. Damit das
+# Projekt privat werden kann, zieht die Seite zu Cloudflare — dort ist die
+# Sichtbarkeit unerheblich, weil hier gebaut und nur das Ergebnis
+# hochgeladen wird.
+#
+# Der Ablauf laeuft absichtlich getrennt und schlaegt nicht fehl, solange
+# der Zugang noch fehlt: So bleibt der bisherige Weg unberuehrt, bis der
+# Umzug steht.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Die Versionsnummer entsteht aus der Anzahl der Commits — mit
+          # einer flachen Kopie waere sie immer 1.0.1.
+          fetch-depth: 0
+
+      - name: Zugang vorhanden?
+        id: zugang
+        run: |
+          if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "da=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "da=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::CLOUDFLARE_API_TOKEN fehlt — es wird nichts hochgeladen. Siehe docs/DEPLOY.md"
+          fi
+
+      - uses: subosito/flutter-action@v2
+        if: steps.zugang.outputs.da == 'true'
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        if: steps.zugang.outputs.da == 'true'
+        working-directory: wach_flutter
+        run: flutter pub get
+
+      - name: Generate localizations
+        if: steps.zugang.outputs.da == 'true'
+        working-directory: wach_flutter
+        run: flutter gen-l10n
+
+      # Riverpod erzeugt die Provider (*.g.dart). Ohne diesen Schritt
+      # fehlen sie im frisch ausgecheckten Baum und nichts kompiliert.
+      - name: Generate providers
+        if: steps.zugang.outputs.da == 'true'
+        working-directory: wach_flutter
+        run: dart run build_runner build
+
+      # Anders als bei GitHub Pages liegt die App im Wurzelverzeichnis,
+      # der Basispfad bleibt also der Standard.
+      - name: Build web
+        if: steps.zugang.outputs.da == 'true'
+        working-directory: wach_flutter
+        run: |
+          APP_VERSION="1.0.$(git rev-list --count HEAD)"
+          echo "Version $APP_VERSION"
+          flutter build web --release --dart-define=APP_VERSION="$APP_VERSION"
+
+      - name: Deploy
+        if: steps.zugang.outputs.da == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy wach_flutter/build/web --project-name wach --branch main
