@@ -136,6 +136,24 @@ void main() {
     // --- Beenden ---
     await tester.tap(find.text('Workout beenden'));
     await settleAsync(tester);
+
+    // --- Der Aufstieg wird gefeiert ---
+    //
+    // Dieses Workout bringt weit mehr als die 200 Punkte fuer den D-Rang,
+    // also muss die Feier kommen. Genau das fehlte hier lange, und genau
+    // deshalb blieb unbemerkt, dass sie nie erschien: Sie stand hinter
+    // einem `mounted`, das nach dem Wechsel zur Startseite nie mehr wahr
+    // war.
+    expect(
+      find.text('D-RANG'),
+      findsOneWidget,
+      reason: 'Der Aufstieg zum D-Rang gehoert gefeiert',
+    );
+
+    // Sie verschwindet von selbst — nichts, was weggetippt werden muss.
+    await passRealTime(tester, const Duration(seconds: 4));
+    expect(find.text('D-RANG'), findsNothing);
+
     await meldungAbwarten(tester);
 
     // Zurueck auf der Startseite.

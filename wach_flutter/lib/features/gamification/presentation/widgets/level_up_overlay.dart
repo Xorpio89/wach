@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -14,24 +15,40 @@ import '../rang_text.dart';
 /// Bewusst ein Overlay und kein Dialog: ein Dialog müsste weggetippt
 /// werden und stünde einem zweiten Durchgang im Weg. Das hier verschwindet
 /// von selbst, lässt sich aber auch antippen.
-Future<void> zeigeStufenaufstieg(BuildContext context, int stufe) async {
+/// Gezeigt wird als Eintrag im [Overlay], nicht als Route.
+///
+/// Der Aufstieg wird beim Beenden eines Workouts gefeiert — im selben
+/// Augenblick, in dem der Wechsel zur Startseite laeuft. Eine als Route
+/// eingefuegte Feier verschwand dabei sofort wieder: Der Wechsel ersetzt
+/// den ganzen Routen-Stack, und was daneben eingefuegt wurde, faellt beim
+/// Neuaufbau heraus. Ein Overlay-Eintrag liegt darueber und bleibt.
+Future<void> zeigeStufenaufstieg(OverlayState overlay, int stufe) async {
   HapticUtils.heavyTap();
-  await Navigator.of(context).push(
-    PageRouteBuilder<void>(
-      // Durchsichtig, damit die Startseite dahinter stehen bleibt.
-      opaque: false,
-      barrierColor: Colors.black54,
-      barrierDismissible: true,
-      transitionDuration: const Duration(milliseconds: 250),
-      pageBuilder: (_, __, ___) => _StufenaufstiegSeite(stufe: stufe),
-    ),
+
+  final fertig = Completer<void>();
+  late OverlayEntry eintrag;
+
+  void beenden() {
+    if (fertig.isCompleted) return;
+    eintrag.remove();
+    fertig.complete();
+  }
+
+  eintrag = OverlayEntry(
+    builder: (_) => _StufenaufstiegSeite(stufe: stufe, onFertig: beenden),
   );
+  overlay.insert(eintrag);
+
+  await fertig.future;
 }
 
 class _StufenaufstiegSeite extends StatefulWidget {
   final int stufe;
 
-  const _StufenaufstiegSeite({required this.stufe});
+  /// Meldet, dass die Feier vorbei ist — von selbst oder angetippt.
+  final VoidCallback onFertig;
+
+  const _StufenaufstiegSeite({required this.stufe, required this.onFertig});
 
   @override
   State<_StufenaufstiegSeite> createState() => _StufenaufstiegSeiteState();
@@ -51,7 +68,7 @@ class _StufenaufstiegSeiteState extends State<_StufenaufstiegSeite>
   void initState() {
     super.initState();
     _controller.forward().whenComplete(() {
-      if (mounted) Navigator.of(context).maybePop();
+      if (mounted) widget.onFertig();
     });
   }
 
@@ -67,11 +84,15 @@ class _StufenaufstiegSeiteState extends State<_StufenaufstiegSeite>
 
     return GestureDetector(
       // Antippen beendet die Feier sofort.
-      onTap: () => Navigator.of(context).maybePop(),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(
-          child: AnimatedBuilder(
+      onTap: widget.onFertig,
+      // Ein Overlay-Eintrag steht ausserhalb eines Scaffold; Material und
+      // die Abdunklung gehoeren deshalb hierher.
+      child: Material(
+        type: MaterialType.transparency,
+        child: ColoredBox(
+          color: Colors.black54,
+          child: Center(
+            child: AnimatedBuilder(
             animation: _controller,
             builder: (context, _) {
               final t = _controller.value;
@@ -120,6 +141,7 @@ class _StufenaufstiegSeiteState extends State<_StufenaufstiegSeite>
                 ],
               );
             },
+            ),
           ),
         ),
       ),

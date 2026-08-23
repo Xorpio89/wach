@@ -15,6 +15,7 @@ import '../../../exercise/presentation/widgets/add_exercise_modal.dart';
 import '../../../exercise/presentation/widgets/delete_exercise_dialog.dart';
 import '../../../exercise/presentation/widgets/edit_exercise_modal.dart';
 import '../../../exercise/presentation/widgets/exercise_tile.dart';
+import '../../../gamification/domain/gamification_stats.dart';
 import '../../../gamification/presentation/providers/gamification_provider.dart';
 import '../../../gamification/presentation/widgets/level_up_overlay.dart';
 import '../../data/models/session_model.dart';
@@ -169,6 +170,19 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
       savedSessionId = await _saveSession();
     }
 
+    // Die Stufe danach — aus dem Verlauf gerechnet, nicht aus
+    // `gamificationProvider` gelesen.
+    //
+    // Das ist der Kern: Der Provider leitet sich von den Sessions ab, und
+    // diese Ableitung geschieht nicht im selben Zug wie das Speichern. Ein
+    // Lesen unmittelbar danach liefert noch den Stand von vorher — die
+    // Stufe schien also unveraendert, und der Aufstieg wurde nie gefeiert,
+    // obwohl die Startseite ihn eine Sekunde spaeter schon anzeigte.
+    final sessionsDanach =
+        await ref.read(sessionProvider.notifier).getAllSessions();
+    final stufeNachher = GamificationStats.aus(sessionsDanach).stufe;
+    final istAufgestiegen = stufeNachher > stufeVorher;
+
     // Reset timer and reps
     ref.read(sessionTimerProvider.notifier).reset();
     ref.read(activeRepsProvider.notifier).clear();
@@ -185,19 +199,21 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     // Fehler landete im try/catch beim Loeschen und die Session blieb
     // gespeichert.
     final container = ProviderScope.containerOf(context, listen: false);
+    // Das Overlay ueberlebt den Wechsel zur Startseite, dieser Screen
+    // nicht. Darueber laeuft die Feier des Aufstiegs — als Route eingefuegt
+    // verschwand sie sofort wieder, weil der Wechsel den Routen-Stack
+    // ersetzt.
+    final overlay = Overlay.of(context, rootOverlay: true);
     context.go('/');
 
     if (!hasData) return;
 
-    // Stufenaufstieg feiern, bevor die Meldung kommt — sonst liegt die
-    // Meldung hinter dem Overlay.
-    final stufeNachher = ref.read(gamificationProvider).stufe;
-    if (stufeNachher > stufeVorher && mounted) {
-      await zeigeStufenaufstieg(context, stufeNachher);
-    }
-
-    // Die Meldung folgt dem Wechsel auf die Startseite.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Erst feiern, dann melden: Sonst liegt die Meldung hinter dem
+    // Overlay.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (istAufgestiegen) {
+        await zeigeStufenaufstieg(overlay, stufeNachher);
+      }
       _zeigeAbschlussMeldung(
         messenger,
         l10n,
