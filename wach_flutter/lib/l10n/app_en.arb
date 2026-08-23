@@ -296,5 +296,16 @@
         "type": "String"
       }
     }
-  }
+  },
+  "installTitle": "Add to home screen",
+  "installSubtitle": "Open as its own app, without the browser bar",
+  "installAction": "Add",
+  "installBannerTitle": "W.A.C.H. as an app",
+  "installBannerBody": "Start from your home screen, without the browser bar — and offline.",
+  "installLater": "Later",
+  "installDone": "Adding it now",
+  "installIosTitle": "Two steps",
+  "installIosBody": "Safari does not offer this by itself:\n\n1. Tap “Share” at the bottom\n2. Choose “Add to Home Screen”",
+  "installIosUnderstood": "Got it",
+  "installAlready": "Running as its own app"
 }

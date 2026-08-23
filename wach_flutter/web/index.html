@@ -250,20 +250,23 @@
   </script>
   <script src="flutter_bootstrap.js" async></script>
   <script>
-    // Nach einer neuen Fassung sehen, sobald die App in den Vordergrund
-    // kommt.
-    //
-    // Warum das noetig ist: eine installierte App wird meist nur in den
-    // Hintergrund geschoben, nicht beendet. Der Browser fragt dann von
-    // sich aus lange nicht nach einem neuen Service Worker, und der
-    // Startbildschirm zeigt weiter die alte Fassung.
-    //
-    // Der Service Worker von Flutter meldet sich beim Aktivieren selbst ab
-    // und laedt alle Fenster neu — der Anstoss hier genuegt also, es
-    // braucht keine eigene Update-Logik.
+    // Eigener Service Worker: Er macht den Start ohne Netz moeglich und
+    // die App installierbar. Registriert wird er hier und nicht in
+    // flutter_bootstrap.js — siehe die Erklaerung dort.
     (function () {
       if (!('serviceWorker' in navigator)) return;
 
+      navigator.serviceWorker.register('sw.js').catch(function (fehler) {
+        console.warn('Service Worker liess sich nicht einrichten:', fehler);
+      });
+
+      // Nach einer neuen Fassung sehen, sobald die App in den Vordergrund
+      // kommt.
+      //
+      // Warum das noetig ist: eine installierte App wird meist nur in den
+      // Hintergrund geschoben, nicht beendet. Der Browser fragt dann von
+      // sich aus lange nicht nach einem neuen Service Worker, und der
+      // Startbildschirm zeigt weiter die alte Fassung.
       function nachUpdateSehen() {
         if (document.visibilityState !== 'visible') return;
         navigator.serviceWorker.getRegistration().then(function (reg) {
@@ -274,6 +277,76 @@
       document.addEventListener('visibilitychange', nachUpdateSehen);
       // Und einmal pro Stunde, falls die App lange offen bleibt.
       setInterval(nachUpdateSehen, 60 * 60 * 1000);
+
+      // Uebernimmt eine bereitstehende neue Fassung und laedt neu. Ohne
+      // das wartet der neue Worker, bis alle Fenster geschlossen sind —
+      // was bei einer installierten App selten vorkommt.
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (window.__wachNeuGeladen) return;
+        window.__wachNeuGeladen = true;
+        window.location.reload();
+      });
+    })();
+  </script>
+  <script>
+    // Das Angebot zum Installieren.
+    //
+    // Chrome zeigt von sich aus keinen Dialog mehr an; es meldet nur
+    // einmal, dass die App installierbar waere. Wer dieses Angebot nicht
+    // festhaelt, kann spaeter nichts mehr anbieten — und der Nutzer findet
+    // die Installation nur noch im Menue des Browsers. Also halten wir es
+    // fest und bieten es in der App selbst an, beliebig oft.
+    (function () {
+      var angebot = null;
+
+      window.addEventListener('beforeinstallprompt', function (ereignis) {
+        // Den eigenen Hinweis des Browsers unterdruecken, damit das
+        // Angebot dort erscheint, wo es in die Oberflaeche passt.
+        ereignis.preventDefault();
+        angebot = ereignis;
+      });
+
+      window.addEventListener('appinstalled', function () {
+        angebot = null;
+      });
+
+      function laeuftInstalliert() {
+        return (
+          window.matchMedia('(display-mode: standalone)').matches ||
+          window.matchMedia('(display-mode: fullscreen)').matches ||
+          window.matchMedia('(display-mode: minimal-ui)').matches ||
+          // Safari auf dem iPhone kennt die Abfrage oben nicht.
+          window.navigator.standalone === true
+        );
+      }
+
+      // Auf dem iPhone gibt es kein Angebot zum Abfangen: Dort fuehrt der
+      // Weg allein ueber "Teilen" und "Zum Home-Bildschirm". Das muss die
+      // App erklaeren koennen, statt einen Knopf zu zeigen, der nichts tut.
+      function istApple() {
+        var kennung = window.navigator.userAgent;
+        var appleGeraet = /iPad|iPhone|iPod/.test(kennung) ||
+          // iPads melden sich neuerdings als Mac mit Beruehrung.
+          (kennung.indexOf('Macintosh') !== -1 && 'ontouchend' in document);
+        return appleGeraet && !laeuftInstalliert();
+      }
+
+      window.wachInstallation = {
+        istInstalliert: laeuftInstalliert,
+        istAngebotDa: function () {
+          return angebot !== null;
+        },
+        brauchtAnleitung: istApple,
+        anbieten: async function () {
+          if (!angebot) return false;
+          angebot.prompt();
+          var ergebnis = await angebot.userChoice;
+          // Ein Angebot laesst sich nur einmal zeigen. Nach einer Absage
+          // schickt der Browser bei Gelegenheit ein neues.
+          angebot = null;
+          return ergebnis && ergebnis.outcome === 'accepted';
+        },
+      };
     })();
   </script>
   <script>

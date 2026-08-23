@@ -387,5 +387,16 @@
         "type": "String"
       }
     }
-  }
+  },
+  "installTitle": "Zum Startbildschirm hinzufügen",
+  "installSubtitle": "Als eigene App öffnen, ohne Browserleiste",
+  "installAction": "Hinzufügen",
+  "installBannerTitle": "W.A.C.H. als App",
+  "installBannerBody": "Vom Startbildschirm starten, ohne Browserleiste — und offline.",
+  "installLater": "Später",
+  "installDone": "Wird hinzugefügt",
+  "installIosTitle": "In zwei Schritten",
+  "installIosBody": "Safari bietet das nicht von selbst an:\n\n1. Unten auf „Teilen“ tippen\n2. „Zum Home-Bildschirm“ wählen",
+  "installIosUnderstood": "Verstanden",
+  "installAlready": "Läuft als eigene App"
 }
