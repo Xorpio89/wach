@@ -1,0 +1,4 @@
+# Alle Pfade auf die Startseite, damit tiefe Adressen wie /feedback nicht
+# als fehlende Datei enden. Die App entscheidet dann selbst, was sie zeigt.
+# Wird von Cloudflare Pages gelesen; GitHub Pages ignoriert die Datei.
+/*  /index.html  200

@@ -10,6 +10,7 @@
     "test": "bun run tools/flutter.mjs test",
     "analyze": "bun run tools/flutter.mjs analyze --no-fatal-infos",
     "check": "bun run analyze && bun run test",
-    "feedback": "bun tools/feedback.mjs"
+    "feedback": "bun tools/feedback.mjs",
+    "deploy": "bun tools/deploy.mjs"
   }
 }
