@@ -9,6 +9,8 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/navigation/app_router.dart';
 import '../../../exercise/presentation/providers/exercise_providers.dart';
 import '../../../feedback/presentation/providers/feedback_providers.dart';
+import '../../../installation/presentation/installation_provider.dart';
+import '../../../installation/presentation/installation_widgets.dart';
 import '../../data/settings_provider.dart';
 import '../../data/locale_provider.dart';
 import '../../data/sync_provider.dart';
@@ -100,6 +102,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final offeneNotizen = ref.watch(offeneFeedbackAnzahlProvider);
+    final installation = ref.watch(installationProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -137,6 +140,22 @@ class SettingsScreen extends ConsumerWidget {
             title: l10n.settingsBetaTitle,
             subtitle: l10n.settingsBetaSubtitle,
           ),
+          // Der dauerhafte Weg zum Hinzufuegen. Der Hinweis auf der
+          // Startseite laesst sich wegwischen — hier bleibt er, damit
+          // niemand ins Browsermenue ausweichen muss.
+          if (installation.kannHinzufuegen)
+            _SettingsTile(
+              icon: Icons.add_to_home_screen_rounded,
+              iconColor: AppColors.secondary,
+              title: l10n.installTitle,
+              subtitle: l10n.installSubtitle,
+              trailing: const Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: AppColors.textSecondary,
+              ),
+              onTap: () => installationAnstossen(context, ref),
+            ),
           _SettingsTile(
             icon: Icons.feedback_outlined,
             iconColor: AppColors.primary,

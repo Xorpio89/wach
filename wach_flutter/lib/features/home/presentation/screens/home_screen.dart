@@ -10,6 +10,7 @@ import '../../../exercise/presentation/providers/exercise_providers.dart';
 import '../../../exercise/presentation/providers/ziel_anhebung_provider.dart';
 import '../../../exercise/presentation/widgets/target_bump_sheet.dart';
 import '../../../gamification/presentation/widgets/gamification_bar.dart';
+import '../../../installation/presentation/installation_widgets.dart';
 import '../../../workout/presentation/providers/session_providers.dart';
 import '../../../workout/presentation/providers/timer_provider.dart';
 import '../../../workout/presentation/widgets/session_history_modal.dart';
@@ -107,6 +108,12 @@ class HomeScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: AppConstants.spacingLg),
+
+                      // Angebot, die App zum Startbildschirm hinzuzufuegen.
+                      // Zeigt sich nur im Browser und laesst sich
+                      // wegwischen; in den Einstellungen bleibt der Weg
+                      // dauerhaft offen.
+                      const InstallationHinweis(),
 
                       // Stufe und Serie — steht vor den Karten, damit der
                       // Fortschritt beim Oeffnen als Erstes ins Auge faellt.
