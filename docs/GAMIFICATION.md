@@ -22,6 +22,35 @@ gebaut, der Zielbonus ebenfalls — dafür schreiben Sessions jetzt die
 damals gültigen Ziele mit (`exerciseTargets`). Sessions von vorher haben
 das Feld nicht; für sie entfällt der Bonus, statt ihn zu erraten.
 
+### Ränge statt Ziffern
+
+Eine Stufe heißt nicht „Stufe 6", sondern **S-Rang**. Eine Zahl ist kein
+Ziel, auf das man zuarbeitet — ein Rang schon, und die Reihenfolge E bis S
+versteht jeder ohne Erklärung.
+
+| Stufe | Rang | ab Punkten |
+| --- | --- | --- |
+| 1 | E-Rang | 0 |
+| 2 | D-Rang | 200 |
+| 3 | C-Rang | 550 |
+| 4 | B-Rang | 1.100 |
+| 5 | A-Rang | 1.900 |
+| 6 | S-Rang | 3.000 |
+| 7 | National Level | 4.800 |
+| 8 | Monarch | 7.000 |
+| 9 | Schattenmonarch | 10.200 |
+| 10 | Herrscher | 14.000 |
+
+Die Schwellen sind **gestaltet, nicht gerechnet**: Die ersten Aufstiege
+kommen schnell, weil sie tragen sollen, danach zieht es sich deutlich an.
+Ein S-Rang, den man in zwei Wochen hat, wäre nichts wert — bei etwa 250
+Punkten je gelungenem Workout dauert er rund drei Monate.
+
+Die Stufen sind nach oben offen, die Ränge nicht. Ab dem letzten Rang zählt
+es weiter: Herrscher, Herrscher II, Herrscher III. Jeder Abstand wächst
+dabei um 1.000 Punkte, sodass kein Aufstieg billiger ist als der vorige —
+ein Test hält das über zwanzig Stufen fest.
+
 Punkte und Stufe werden **aus dem Verlauf berechnet, nicht
 mitgeführt**. Das erspart eine Datenmigration, kann nicht doppelt zählen,
 übersteht ein „Rückgängig" beim Beenden von selbst und bleibt auch dann

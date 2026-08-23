@@ -28,7 +28,7 @@ void main() {
 
     // Eine Leiste auf null waere ein Platzhalter ohne Aussage.
     expect(find.byType(LinearProgressIndicator), findsNothing);
-    expect(find.textContaining('Stufe'), findsNothing);
+    expect(find.text('E-Rang'), findsNothing);
   });
 
   testWidgets('zeigt Stufe, Punkte und verbleibende Strecke', (tester) async {
@@ -45,7 +45,8 @@ void main() {
       ),
     );
 
-    expect(find.text('Stufe 3'), findsOneWidget);
+    // Auf der Startseite steht der Rang allein — er ist die Auszeichnung.
+    expect(find.text('C-Rang'), findsOneWidget);
     expect(find.text('620'), findsOneWidget);
     expect(find.text('noch 130 Punkte'), findsOneWidget);
     expect(find.text('4 Tage in Folge'), findsOneWidget);
@@ -71,7 +72,7 @@ void main() {
     );
 
     expect(find.byIcon(Icons.local_fire_department_rounded), findsNothing);
-    expect(find.text('Stufe 2'), findsOneWidget);
+    expect(find.text('D-Rang'), findsOneWidget);
   });
 
   testWidgets('ein einzelner Tag steht in der Einzahl', (tester) async {

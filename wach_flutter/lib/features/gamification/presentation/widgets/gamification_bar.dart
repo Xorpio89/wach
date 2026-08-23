@@ -5,6 +5,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../rang_text.dart';
 import '../providers/gamification_provider.dart';
 
 /// Stufe, Fortschritt und Serie — eine Zeile auf der Startseite.
@@ -40,7 +41,7 @@ class GamificationBar extends ConsumerWidget {
             children: [
               Flexible(
                 child: Text(
-                  l10n.gamificationLevel(stats.stufe),
+                  rangText(l10n, stats.stufe),
                   style: AppTypography.bodyMedium.copyWith(
                     fontWeight: FontWeight.w600,
                     color: AppColors.primary,
