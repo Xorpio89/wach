@@ -90,19 +90,42 @@ void main() {
   });
 
   group('Stufen', () {
-    test('die Schwellen wachsen um je 50 Punkte', () {
-      expect(GamificationStats.schwelleFuer(1), 0);
-      expect(GamificationStats.schwelleFuer(2), 200);
-      expect(GamificationStats.schwelleFuer(3), 450);
-      expect(GamificationStats.schwelleFuer(4), 750);
-      expect(GamificationStats.schwelleFuer(5), 1100);
+    test('die Schwellen der benannten Raenge stehen fest', () {
+      // Gestaltet, nicht gerechnet: der erste Aufstieg kommt nach einem
+      // Workout, der S-Rang erst nach Monaten.
+      expect(GamificationStats.schwelleFuer(1), 0); // E-Rang
+      expect(GamificationStats.schwelleFuer(2), 200); // D-Rang
+      expect(GamificationStats.schwelleFuer(3), 550); // C-Rang
+      expect(GamificationStats.schwelleFuer(4), 1100); // B-Rang
+      expect(GamificationStats.schwelleFuer(5), 1900); // A-Rang
+      expect(GamificationStats.schwelleFuer(6), 3000); // S-Rang
+      expect(GamificationStats.schwelleFuer(10), 14000); // Herrscher
+    });
+
+    test('die Abstaende wachsen mit jeder Stufe', () {
+      // Kein Ausrutscher nach unten: Jeder Aufstieg muss teurer sein als
+      // der vorige, sonst wird eine Stufe wertlos.
+      var vorigerAbstand = 0;
+      for (var stufe = 2; stufe <= 20; stufe++) {
+        final abstand = GamificationStats.schwelleFuer(stufe) -
+            GamificationStats.schwelleFuer(stufe - 1);
+        expect(abstand, greaterThan(vorigerAbstand),
+            reason: 'Stufe $stufe ist nicht teurer als die vorige');
+        vorigerAbstand = abstand;
+      }
+    });
+
+    test('jenseits der Raenge geht es weiter', () {
+      // Die Raenge enden bei zehn, die Stufen nicht.
+      expect(GamificationStats.schwelleFuer(11), 18800);
+      expect(GamificationStats.schwelleFuer(12), 24600);
     });
 
     test('genau auf der Schwelle gilt die neue Stufe', () {
       expect(GamificationStats.stufeFuer(199), 1);
       expect(GamificationStats.stufeFuer(200), 2);
-      expect(GamificationStats.stufeFuer(449), 2);
-      expect(GamificationStats.stufeFuer(450), 3);
+      expect(GamificationStats.stufeFuer(549), 2);
+      expect(GamificationStats.stufeFuer(550), 3);
     });
 
     test('Stufe und Schwelle passen ueber einen weiten Bereich zusammen', () {
@@ -124,13 +147,13 @@ void main() {
     });
 
     test('der Fortschritt zeigt die Strecke innerhalb der Stufe', () {
-      // 300 Punkte: Stufe 2 (ab 200), naechste ab 450 — also 100 von 250.
+      // 300 Punkte: Stufe 2 (ab 200), naechste ab 550 — also 100 von 350.
       final stats = GamificationStats.aus([session(300)]);
       expect(stats.stufe, 2);
       expect(stats.punkteInStufe, 100);
-      expect(stats.spanneDerStufe, 250);
-      expect(stats.punkteBisNaechsteStufe, 150);
-      expect(stats.fortschritt, closeTo(0.4, 0.001));
+      expect(stats.spanneDerStufe, 350);
+      expect(stats.punkteBisNaechsteStufe, 250);
+      expect(stats.fortschritt, closeTo(100 / 350, 0.001));
     });
   });
 

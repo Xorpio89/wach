@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../rang_text.dart';
 
 /// Kurze Feier beim Stufenaufstieg.
 ///
@@ -92,16 +93,21 @@ class _StufenaufstiegSeiteState extends State<_StufenaufstiegSeite>
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          // Der Rang tritt an die Stelle der Zahl: "S-Rang"
+                          // ist das Ereignis, "6" war nur eine Ziffer.
                           Text(
-                            '${widget.stufe}',
-                            style: AppTypography.timerLarge.copyWith(
+                            rangText(l10n, widget.stufe).toUpperCase(),
+                            textAlign: TextAlign.center,
+                            style: AppTypography.headline1.copyWith(
                               color: AppColors.primary,
-                              fontSize: 96,
+                              fontSize: 44,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 2,
                             ),
                           ),
                           const SizedBox(height: AppConstants.spacingSm),
                           Text(
-                            l10n.gamificationLevelUp(widget.stufe),
+                            l10n.gamificationLevelUp(rangText(l10n, widget.stufe)),
                             textAlign: TextAlign.center,
                             style: AppTypography.headline3.copyWith(
                               color: AppColors.textPrimary,
