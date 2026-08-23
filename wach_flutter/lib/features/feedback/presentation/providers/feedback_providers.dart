@@ -31,13 +31,17 @@ class FeedbackNotizen extends _$FeedbackNotizen {
     return ref.watch(feedbackDataSourceProvider).getAll();
   }
 
-  /// Nimmt eine Rueckmeldung auf und gibt sie zurueck, damit die
-  /// Oberflaeche sie gleich weitergeben kann.
-  Future<FeedbackNotiz> erfasse({
+  /// Formt eine Rueckmeldung, ohne sie schon abzulegen.
+  ///
+  /// Getrennt vom Ablegen, weil das Ablegen wartet und im Browser dabei
+  /// der Bezug zum Antippen verloren geht: Ein Fenster, das erst danach
+  /// aufgeht, gilt als ungefragt und wird unterdrueckt. Die Oberflaeche
+  /// braucht die Notiz deshalb vorher — zum Oeffnen im selben Zug.
+  FeedbackNotiz baue({
     required FeedbackArt art,
     required String text,
-  }) async {
-    final notiz = FeedbackNotiz(
+  }) {
+    return FeedbackNotiz(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       art: art,
       text: text.trim(),
@@ -45,10 +49,12 @@ class FeedbackNotizen extends _$FeedbackNotizen {
       appVersion: AppConstants.appVersion,
       plattform: erfasseUmgebung(),
     );
+  }
 
+  /// Legt eine geformte Rueckmeldung ab.
+  Future<void> lege(FeedbackNotiz notiz) async {
     await ref.read(feedbackDataSourceProvider).speichere(notiz);
     await _neuLaden();
-    return notiz;
   }
 
   /// Haelt fest, dass eine Notiz weitergegeben wurde.

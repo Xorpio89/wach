@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -54,33 +55,54 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
     if (text.isEmpty) return;
 
     final l10n = AppLocalizations.of(context);
-    final notiz = await ref
-        .read(feedbackNotizenProvider.notifier)
-        .erfasse(art: _art, text: text);
+    final notifier = ref.read(feedbackNotizenProvider.notifier);
+    final notiz = notifier.baue(art: _art, text: text);
+
+    // Das Oeffnen wird hier angestossen und erst weiter unten abgewartet.
+    // Im Browser darf zwischen dem Antippen und dem Fenster kein Warten
+    // liegen — sonst gilt es als ungefragt und wird unterdrueckt. Das
+    // Ablegen wartet aber, und es soll auch dann geschehen, wenn das
+    // Fenster nicht aufgeht: Die Beobachtung darf nicht verloren gehen.
+    final oeffnen = undMelden ? _oeffneFormular(notiz) : null;
+
+    await notifier.lege(notiz);
 
     _eingabe.clear();
     if (!mounted) return;
     FocusScope.of(context).unfocus();
 
-    if (undMelden) {
-      await _melden(notiz);
+    if (oeffnen == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.feedbackNotiertMeldung)),
+      );
       return;
     }
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.feedbackNotiertMeldung)),
-    );
+    await _werteOeffnenAus(oeffnen, notiz);
   }
 
+  /// Meldet eine Notiz, die schon abgelegt ist.
   Future<void> _melden(FeedbackNotiz notiz) async {
-    final l10n = AppLocalizations.of(context);
-    final geoeffnet = await launchUrl(
+    await _werteOeffnenAus(_oeffneFormular(notiz), notiz);
+  }
+
+  Future<bool> _oeffneFormular(FeedbackNotiz notiz) {
+    return launchUrl(
       FeedbackBericht.adresse(notiz),
       mode: LaunchMode.externalApplication,
     );
+  }
+
+  Future<void> _werteOeffnenAus(
+    Future<bool> oeffnen,
+    FeedbackNotiz notiz,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final geoeffnet = await oeffnen;
 
     if (!mounted) return;
     if (!geoeffnet) {
+      // Nicht als weitergegeben abhaken: Sonst waere die Notiz erledigt,
+      // obwohl nie ein Formular aufging.
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.feedbackOeffnenFehler)),
       );
@@ -112,7 +134,12 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
         title: Text(l10n.feedbackTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.of(context).pop(),
+          // Zurueck zu den Einstellungen, wenn von dort gekommen. Wurde
+          // die Seite direkt aufgerufen — als installierte App etwa, wenn
+          // sie hier zuletzt stand — gibt es kein Zurueck, und ein blosses
+          // pop() hinterliesse einen leeren Bildschirm.
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/'),
         ),
         actions: [
           if (notizen.isNotEmpty)
