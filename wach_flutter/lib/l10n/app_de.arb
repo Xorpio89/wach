@@ -438,5 +438,59 @@
         "type": "int"
       }
     }
+  },
+  "challengeTemplatesTitle": "Bekannte Challenges",
+  "challengeTemplatesSubtitle": "Vorlage wählen statt selbst zusammenstellen",
+  "challengeTemplatesOwn": "Eigene Challenge",
+  "challengeTemplatesOwnSubtitle": "Übungen und Ziele selbst festlegen",
+  "challengeTemplateOneDay": "an einem Tag",
+  "challengeTemplateNoDeadline": "ohne Frist",
+  "challengeTemplateDays": "{days} Tage",
+  "challengeTemplatePerDay": "{reps}/Tag",
+  "challengeTemplateTotal": "{reps} Wiederholungen",
+  "challengeTemplateAdded": "{name} angelegt",
+  "challengeTplErsteHundert": "Die ersten 100",
+  "challengeTplErsteHundertDesc": "Hundert Klimmzüge, so lange du brauchst. Der Einstieg — es zählt nur, dass sie irgendwann alle da sind.",
+  "challengeTplHundertAmTag": "100 am Tag",
+  "challengeTplHundertAmTagDesc": "Hundert Liegestütze täglich, einen Monat lang. Die meistgenannte Einstiegszahl — am Stück oder in zehn Sätzen zu zehn.",
+  "challengeTplHalbMurph": "Half Murph",
+  "challengeTplHalbMurphDesc": "Die halbe Dosis des Gedenk-Workouts. Der übliche Weg, sich heranzutasten, bevor man das ganze angeht.",
+  "challengeTplAngie": "Angie",
+  "challengeTplAngieDesc": "Vier mal hundert, jede Übung am Stück durch. Klassiker unter den Richtwerten — keine Aufteilung, kein Wechseln.",
+  "challengeTplMurph": "Murph",
+  "challengeTplMurphDesc": "Das Gedenk-Workout für Michael Murphy, jedes Jahr am Memorial Day. Im Original mit zwei Meilen Lauf und Gewichtsweste — hier zählen die 600 Wiederholungen.",
+  "challengeTplTausendKlimmzuege": "1.000 Klimmzüge",
+  "challengeTplTausendKlimmzuegeDesc": "Tausend Stück in einem Monat, etwa dreiunddreißig am Tag. Die Zahl, die überall als Monatsziel kursiert.",
+  "challengeTplWochenvolumen": "Wochenvolumen",
+  "challengeTplWochenvolumenDesc": "Fast dreitausend Wiederholungen in sieben Tagen. Kein Richtwert aus dem Netz, sondern eine ordentliche Trainingswoche.",
+  "challengeTplFuenftausend": "5.000 Reps",
+  "challengeTplFuenftausendDesc": "Ganzkörper, fünftausend Wiederholungen in dreißig Tagen. Für alle, denen tausend Klimmzüge zu einseitig sind.",
+  "@challengeTemplateDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@challengeTemplatePerDay": {
+    "placeholders": {
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
+  "@challengeTemplateTotal": {
+    "placeholders": {
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
+  "@challengeTemplateAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

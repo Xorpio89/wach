@@ -347,5 +347,59 @@
         "type": "int"
       }
     }
+  },
+  "challengeTemplatesTitle": "Known challenges",
+  "challengeTemplatesSubtitle": "Pick a template instead of building your own",
+  "challengeTemplatesOwn": "Own challenge",
+  "challengeTemplatesOwnSubtitle": "Set exercises and targets yourself",
+  "challengeTemplateOneDay": "in one day",
+  "challengeTemplateNoDeadline": "no deadline",
+  "challengeTemplateDays": "{days} days",
+  "challengeTemplatePerDay": "{reps}/day",
+  "challengeTemplateTotal": "{reps} reps",
+  "challengeTemplateAdded": "{name} created",
+  "challengeTplErsteHundert": "The first 100",
+  "challengeTplErsteHundertDesc": "A hundred pull-ups, take as long as you need. The way in — all that counts is that they eventually add up.",
+  "challengeTplHundertAmTag": "100 a day",
+  "challengeTplHundertAmTagDesc": "A hundred push-ups daily for a month. The most-quoted entry number — in one go or ten sets of ten.",
+  "challengeTplHalbMurph": "Half Murph",
+  "challengeTplHalbMurphDesc": "Half the dose of the memorial workout. The usual way to work up to the full thing.",
+  "challengeTplAngie": "Angie",
+  "challengeTplAngieDesc": "Four times a hundred, each exercise straight through. A classic benchmark — no partitioning, no switching.",
+  "challengeTplMurph": "Murph",
+  "challengeTplMurphDesc": "The memorial workout for Michael Murphy, run every Memorial Day. Originally with two miles of running and a weight vest — here the 600 reps count.",
+  "challengeTplTausendKlimmzuege": "1,000 pull-ups",
+  "challengeTplTausendKlimmzuegeDesc": "A thousand in one month, about thirty-three a day. The number that circulates everywhere as a monthly goal.",
+  "challengeTplWochenvolumen": "Weekly volume",
+  "challengeTplWochenvolumenDesc": "Nearly three thousand reps in seven days. Not a benchmark from the internet, just a solid training week.",
+  "challengeTplFuenftausend": "5,000 reps",
+  "challengeTplFuenftausendDesc": "Full body, five thousand reps in thirty days. For anyone who finds a thousand pull-ups too one-sided.",
+  "@challengeTemplateDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@challengeTemplatePerDay": {
+    "placeholders": {
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
+  "@challengeTemplateTotal": {
+    "placeholders": {
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
+  "@challengeTemplateAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }
