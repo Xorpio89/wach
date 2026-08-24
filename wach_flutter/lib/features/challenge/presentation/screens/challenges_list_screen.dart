@@ -12,8 +12,37 @@ import '../../../../shared/widgets/progress_bar.dart';
 import '../../domain/entities/challenge.dart';
 import '../providers/challenge_providers.dart';
 import '../widgets/add_challenge_modal.dart';
+import '../widgets/challenge_vorlagen_sheet.dart';
 
 /// Overview of all challenges with progress + entry points to create new ones.
+/// Fuehrt zum Anlegen: erst die bekannten Challenges, dann — wer will —
+/// das eigene Zusammenstellen.
+///
+/// Der Umweg ueber die Vorlagen ist Absicht. Wer nicht ohnehin weiss, was
+/// eine sinnvolle Zahl ist, steht vor einem leeren Formular und legt gar
+/// nichts an.
+Future<void> _challengeAnlegen(BuildContext context, WidgetRef ref) async {
+  final auswahl = await zeigeVorlagen(context);
+  if (auswahl == null || !context.mounted) return;
+
+  if (auswahl.istEigene) {
+    await showAddChallengeModal(context);
+    return;
+  }
+
+  final vorlage = auswahl.vorlage!;
+  final l10n = AppLocalizations.of(context);
+  final name = vorlagenName(l10n, vorlage.id);
+  final challenge =
+      await ref.read(challengeProvider.notifier).ausVorlage(vorlage, name);
+
+  if (challenge == null || !context.mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(l10n.challengeTemplateAdded(name))),
+  );
+  context.push('/challenges/${challenge.id}');
+}
+
 class ChallengesListScreen extends ConsumerWidget {
   const ChallengesListScreen({super.key});
 
@@ -24,7 +53,7 @@ class ChallengesListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context).challengesTitle)),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showAddChallengeModal(context),
+        onPressed: () => _challengeAnlegen(context, ref),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
@@ -42,14 +71,7 @@ class ChallengesListScreen extends ConsumerWidget {
             if (challenges.isEmpty) {
               return _EmptyChallenges(
                 onCreate: () => showAddChallengeModal(context),
-                onTemplate: () async {
-                  final challenge = await ref
-                      .read(challengeProvider.notifier)
-                      .createCalisthenicsTemplate();
-                  if (challenge != null && context.mounted) {
-                    context.push('/challenges/${challenge.id}');
-                  }
-                },
+                onTemplate: () => _challengeAnlegen(context, ref),
               );
             }
             return ListView.separated(

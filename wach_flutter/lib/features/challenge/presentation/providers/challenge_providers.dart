@@ -5,6 +5,7 @@ import '../../../exercise/presentation/providers/exercise_providers.dart'
     show databaseServiceProvider;
 import '../../data/datasources/challenge_local_datasource.dart';
 import '../../data/repositories/challenge_repository_impl.dart';
+import '../../domain/challenge_vorlagen.dart';
 import '../../domain/entities/challenge.dart';
 import '../../domain/repositories/challenge_repository.dart';
 
@@ -101,15 +102,22 @@ class ChallengeNotifier extends _$ChallengeNotifier {
     await updateChallenge(challenge.copyWith(items: items));
   }
 
-  /// Create the ready-made 1-week calisthenics volume challenge.
-  Future<Challenge?> createCalisthenicsTemplate() {
+  /// Legt eine Challenge nach einer der bekannten Vorlagen an.
+  ///
+  /// Der Name kommt von aussen, weil er uebersetzt ist — die Vorlage selbst
+  /// kennt nur ihre Kennung.
+  Future<Challenge?> ausVorlage(ChallengeVorlage vorlage, String name) {
     return createChallenge(
-      name: '1-Week Calisthenics Challenge',
-      periodDays: 7,
+      name: name,
+      periodDays: vorlage.tage,
       items: [
-        ChallengeItem(id: _uuid.v4(), name: 'Klimmzüge', targetReps: 700),
-        ChallengeItem(id: _uuid.v4(), name: 'Liegestütze', targetReps: 1200),
-        ChallengeItem(id: _uuid.v4(), name: 'Dips', targetReps: 1000),
+        for (final uebung in vorlage.uebungen)
+          ChallengeItem(
+            id: _uuid.v4(),
+            name: uebung.name,
+            targetReps: uebung.ziel,
+            blockSize: uebung.blockGroesse,
+          ),
       ],
     );
   }
