@@ -492,5 +492,174 @@
         "type": "String"
       }
     }
+  },
+  "homeKartenTitle": "Karten-Workout",
+  "homeKartenSubtitle": "Karte ziehen, Reps machen, Deck überleben",
+  "kartenTitle": "Karten-Workout",
+  "kartenModus": "Modus",
+  "kartenModusDeck": "Deck überleben",
+  "kartenModusZeit": "Gegen die Uhr",
+  "kartenDeck": "Deck",
+  "kartenDeckKurz": "Kurz · {anzahl}",
+  "@kartenDeckKurz": {
+    "placeholders": {
+      "anzahl": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenDeckMittel": "Mittel · {anzahl}",
+  "@kartenDeckMittel": {
+    "placeholders": {
+      "anzahl": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenDeckVoll": "Voll · {anzahl}",
+  "@kartenDeckVoll": {
+    "placeholders": {
+      "anzahl": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenZeitlimit": "Zeitlimit",
+  "kartenMinuten": "{minuten} Min",
+  "@kartenMinuten": {
+    "placeholders": {
+      "minuten": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenSchwierigkeit": "Schwierigkeit",
+  "kartenLeicht": "Leicht",
+  "kartenNormal": "Normal",
+  "kartenHart": "Hart",
+  "kartenBrutal": "Brutal",
+  "kartenObergrenze": "Höchstens pro Karte",
+  "kartenObergrenzeKeine": "Keine Grenze",
+  "kartenAktionen": "Aktionskarten",
+  "kartenAktionenHinweis": "Joker, Nochmal, ×2 und Wahl",
+  "kartenStapel": "Stapel",
+  "kartenStapelHinzufuegen": "Stapel hinzufügen",
+  "kartenStapelEntfernen": "Stapel entfernen",
+  "kartenStapelGestalten": "Farbe und Symbol",
+  "kartenStart": "Los geht's",
+  "kartenKeineUebungen": "Lege zuerst Übungen an – jede kann ein Stapel werden.",
+  "kartenKarteVon": "Karte {nummer} von {gesamt}",
+  "@kartenKarteVon": {
+    "placeholders": {
+      "nummer": {
+        "type": "int"
+      },
+      "gesamt": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenKarteNummer": "Karte {nummer}",
+  "@kartenKarteNummer": {
+    "placeholders": {
+      "nummer": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenJoker": "Joker",
+  "kartenJokerText": "Durchatmen – nichts zu tun",
+  "kartenNochmal": "Nochmal",
+  "kartenNochmalText": "Die letzte Übung noch einmal",
+  "kartenNochmalLeer": "Noch keine Übung – frei",
+  "kartenDoppelt": "×2",
+  "kartenDoppeltText": "Die nächste Karte zählt doppelt",
+  "kartenDoppeltAktiv": "×2 aktiv",
+  "kartenWahl": "Wahl",
+  "kartenWahlText": "Wähle deine Übung",
+  "kartenTippen": "Tippen = erledigt",
+  "kartenWeiter": "Weiter",
+  "kartenWeniger": "Eine weniger",
+  "kartenMehr": "Eine mehr",
+  "kartenRueckgaengig": "Rückgängig",
+  "kartenBeenden": "Beenden",
+  "kartenBeendenFrage": "Spiel beenden?",
+  "kartenBeendenText": "Die bisherigen Karten bleiben im Ergebnis.",
+  "kartenGesamt": "Bisher {anzahl} Wiederholungen",
+  "@kartenGesamt": {
+    "placeholders": {
+      "anzahl": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenFertig": "Deck überlebt!",
+  "kartenZeitAbgelaufen": "Zeit abgelaufen",
+  "kartenBeendet": "Spiel beendet",
+  "kartenErgebnisKarten": "{anzahl} Karten",
+  "@kartenErgebnisKarten": {
+    "placeholders": {
+      "anzahl": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenErgebnisReps": "{anzahl} Wiederholungen",
+  "@kartenErgebnisReps": {
+    "placeholders": {
+      "anzahl": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenSpeichern": "Als Workout speichern",
+  "kartenGespeichert": "Gespeichert",
+  "kartenNochmalSpielen": "Nochmal spielen",
+  "kartenEinstellungen": "Einstellungen ändern",
+  "kartenUebungWaehlen": "Übung wählen",
+  "kartenSpieler": "Spieler",
+  "kartenSpielerName": "Spieler {nummer}",
+  "@kartenSpielerName": {
+    "placeholders": {
+      "nummer": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenAmZug": "Am Zug: {name}",
+  "@kartenAmZug": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "kartenPause": "Pause zwischen Karten",
+  "kartenPauseAus": "Aus",
+  "kartenSekunden": "{sekunden} s",
+  "@kartenSekunden": {
+    "placeholders": {
+      "sekunden": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenPauseLaeuft": "Pause",
+  "kartenPauseUeberspringen": "Pause überspringen",
+  "kartenSpeichernFuer": "Für {name} speichern",
+  "@kartenSpeichernFuer": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "kartenFarbe": "Farbe {nummer}",
+  "@kartenFarbe": {
+    "placeholders": {
+      "nummer": {
+        "type": "int"
+      }
+    }
   }
 }
