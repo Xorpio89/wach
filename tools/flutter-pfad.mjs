@@ -12,6 +12,8 @@ const kandidaten = [
   'C:/src/flutter/bin/flutter.bat',
   `${process.env.LOCALAPPDATA ?? ''}/flutter/bin/flutter.bat`,
   `${process.env.USERPROFILE ?? ''}/flutter/bin/flutter.bat`,
+  // macOS: git-Klon nach ~/development/flutter (Version wie in deploy.yml)
+  `${process.env.HOME ?? ''}/development/flutter/bin/flutter`,
 ];
 
 /** Pfad zum Flutter-Befehl — aus dem PATH, sonst von den ueblichen Orten. */

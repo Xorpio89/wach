@@ -7,7 +7,7 @@ import 'package:wach_flutter/features/workout/presentation/screens/workout_scree
 
 import '../../support/test_harness.dart';
 
-/// Blaettern ab der sechsten Uebung.
+/// Blaettern ab der fuenften Uebung.
 void main() {
   late Database db;
 
@@ -51,51 +51,51 @@ void main() {
   }
 
   group('Wann geblaettert wird', () {
-    testWidgets('fuenf Uebungen passen auf eine Seite', (tester) async {
+    testWidgets('vier Uebungen passen auf eine Seite', (tester) async {
+      await pumpWorkout(tester);
+      await fuelleAuf(tester, 4);
+
+      expect(find.byType(PageView), findsNothing);
+      expect(find.byType(ExerciseTile), findsNWidgets(4));
+    });
+
+    testWidgets('ab der fuenften gibt es eine zweite Seite', (tester) async {
       await pumpWorkout(tester);
       await fuelleAuf(tester, 5);
 
-      expect(find.byType(PageView), findsNothing);
-      expect(find.byType(ExerciseTile), findsNWidgets(5));
-    });
-
-    testWidgets('ab der sechsten gibt es eine zweite Seite', (tester) async {
-      await pumpWorkout(tester);
-      await fuelleAuf(tester, 6);
-
       expect(find.byType(PageView), findsOneWidget);
-      // Fuenf pro Seite, die sechste liegt dahinter.
+      // Vier pro Seite, die fuenfte liegt dahinter.
       expect(
         find.byType(ExerciseTile),
         findsNWidgets(AppConstants.maxExercisesPerPage),
       );
-      expect(tileOf('Zusatz 6'), findsNothing);
+      expect(tileOf('Zusatz 5'), findsNothing);
     });
   });
 
   group('Seite wechseln', () {
     testWidgets('durch Wischen', (tester) async {
       await pumpWorkout(tester);
-      await fuelleAuf(tester, 6);
+      await fuelleAuf(tester, 5);
 
       await naechsteSeite(tester);
 
-      expect(tileOf('Zusatz 6'), findsOneWidget);
+      expect(tileOf('Zusatz 5'), findsOneWidget);
     });
 
     testWidgets('durch Antippen des Pfeils', (tester) async {
       await pumpWorkout(tester);
-      await fuelleAuf(tester, 6);
+      await fuelleAuf(tester, 5);
 
       await tester.tap(find.byIcon(Icons.chevron_right_rounded));
       await settleAsync(tester);
 
-      expect(tileOf('Zusatz 6'), findsOneWidget);
+      expect(tileOf('Zusatz 5'), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.chevron_left_rounded));
       await settleAsync(tester);
 
-      expect(tileOf('Zusatz 6'), findsNothing);
+      expect(tileOf('Zusatz 5'), findsNothing);
     });
   });
 
@@ -103,7 +103,7 @@ void main() {
     testWidgets('eine offene Kachel steht nach dem Zurueckblaettern noch offen',
         (tester) async {
       await pumpWorkout(tester);
-      await fuelleAuf(tester, 6);
+      await fuelleAuf(tester, 5);
 
       // Auf Seite eins eine Kachel aufklappen.
       await tester.tap(tileOf('Pull Ups'));
@@ -127,7 +127,7 @@ void main() {
     testWidgets('gezaehlte Reps bleiben ueber den Seitenwechsel erhalten',
         (tester) async {
       await pumpWorkout(tester);
-      await fuelleAuf(tester, 6);
+      await fuelleAuf(tester, 5);
 
       await tester.tap(tileOf('Pull Ups'));
       await pumpFrames(tester);
@@ -149,10 +149,10 @@ void main() {
     testWidgets('eine Kachel auf Seite zwei bleibt beim Wechsel offen',
         (tester) async {
       await pumpWorkout(tester);
-      await fuelleAuf(tester, 6);
+      await fuelleAuf(tester, 5);
 
       await naechsteSeite(tester);
-      await tester.tap(tileOf('Zusatz 6'));
+      await tester.tap(tileOf('Zusatz 5'));
       await pumpFrames(tester);
       expect(find.text('+10'), findsOneWidget);
 
@@ -162,7 +162,7 @@ void main() {
       await naechsteSeite(tester);
 
       expect(
-        find.descendant(of: tileOf('Zusatz 6'), matching: find.text('+10')),
+        find.descendant(of: tileOf('Zusatz 5'), matching: find.text('+10')),
         findsOneWidget,
       );
     });

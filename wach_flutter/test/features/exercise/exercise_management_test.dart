@@ -31,6 +31,15 @@ void main() {
         matching: find.byType(ExerciseTile),
       );
 
+  /// Zur Seite blaettern, auf der [name] steht — ab der fuenften Uebung
+  /// liegt sie auf Seite zwei.
+  Future<void> blaettereZu(WidgetTester tester, String name) async {
+    if (tileOf(name).evaluate().isNotEmpty) return;
+    if (find.byType(PageView).evaluate().isEmpty) return;
+    await tester.drag(find.byType(PageView), const Offset(-400, 0));
+    await settleAsync(tester);
+  }
+
   /// Die Rueckseite aufklappen und dort den Muelleimer druecken.
   Future<void> loescheUeberKachel(
     WidgetTester tester,
@@ -80,9 +89,9 @@ void main() {
       await tester.tap(find.widgetWithText(ElevatedButton, 'Übung hinzufügen'));
       await settleAsync(tester);
 
-      // Ab der fuenften Uebung ruecken je zwei Kacheln nebeneinander —
-      // alle bleiben sichtbar, ohne Blaettern.
-      expect(find.byType(ExerciseTile), findsNWidgets(5));
+      // Die fuenfte Uebung liegt auf Seite zwei.
+      expect(find.byType(PageView), findsOneWidget);
+      await blaettereZu(tester, 'Burpees');
       expect(tileOf('Burpees'), findsOneWidget);
     });
 
@@ -97,6 +106,7 @@ void main() {
 
       await tester.tap(find.widgetWithText(ElevatedButton, 'Übung hinzufügen'));
       await settleAsync(tester);
+      await blaettereZu(tester, 'Chin Ups');
 
       expect(tileOf('Chin Ups'), findsOneWidget);
       // Das Ziel aus der Schnellauswahl ist mitgekommen.
@@ -282,6 +292,7 @@ void main() {
 
       await tester.tap(find.widgetWithText(ElevatedButton, 'Übung hinzufügen'));
       await settleAsync(tester);
+      await blaettereZu(tester, 'Burpees');
 
       expect(
         find.descendant(
@@ -363,7 +374,11 @@ void main() {
       await pumpWorkout(tester);
       await legeAn(tester, 'Burpees');
 
-      expect(find.byType(ExerciseTile), findsNWidgets(5));
+      // Vier pro Seite, die fuenfte liegt auf Seite zwei.
+      expect(
+        find.byType(ExerciseTile),
+        findsNWidgets(AppConstants.maxExercisesPerPage),
+      );
 
       final erste = tester.getRect(find.byType(ExerciseTile).at(0));
       final zweite = tester.getRect(find.byType(ExerciseTile).at(1));
@@ -381,6 +396,7 @@ void main() {
         (tester) async {
       await pumpWorkout(tester);
       await legeAn(tester, 'Burpees');
+      await blaettereZu(tester, 'Burpees');
 
       await tester.tap(tileOf('Burpees'));
       await pumpFrames(tester);
