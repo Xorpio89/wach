@@ -44,10 +44,10 @@ abstract final class AppConstants {
 
   /// Wie viele Uebungen auf eine Seite passen.
   ///
-  /// Jede bekommt eine eigene Zeile in voller Breite; ab der sechsten wird
+  /// Jede bekommt eine eigene Zeile in voller Breite; ab der fuenften wird
   /// geblaettert. Mehr Kacheln uebereinander werden so flach, dass auf der
   /// aufgeklappten Rueckseite nichts mehr zu treffen ist.
-  static const maxExercisesPerPage = 5;
+  static const maxExercisesPerPage = 4;
 
   /// Wie viele Vorschlaege im Hinzufuegen-Fenster ohne Aufklappen
   /// erscheinen.

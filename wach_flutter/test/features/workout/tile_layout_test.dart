@@ -64,12 +64,12 @@ void main() {
     }
   });
 
-  testWidgets('auch die fuenfte bleibt in voller Breite auf einer Seite',
+  testWidgets('ab der fuenften wird geblaettert, die Seite bleibt voll breit',
       (tester) async {
     await pumpWorkout(tester);
     await legeAn(tester, 'Burpees');
 
-    expect(find.byType(PageView), findsNothing);
+    expect(find.byType(PageView), findsOneWidget);
 
     final rahmen = kachelRahmen(tester);
     expect(rahmen, hasLength(AppConstants.maxExercisesPerPage));
