@@ -401,5 +401,174 @@
         "type": "String"
       }
     }
+  },
+  "homeKartenTitle": "Card Deck Workout",
+  "homeKartenSubtitle": "Draw a card, do the reps, survive the deck",
+  "kartenTitle": "Card Deck Workout",
+  "kartenModus": "Mode",
+  "kartenModusDeck": "Survive the deck",
+  "kartenModusZeit": "Against the clock",
+  "kartenDeck": "Deck",
+  "kartenDeckKurz": "Short · {anzahl}",
+  "@kartenDeckKurz": {
+    "placeholders": {
+      "anzahl": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenDeckMittel": "Medium · {anzahl}",
+  "@kartenDeckMittel": {
+    "placeholders": {
+      "anzahl": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenDeckVoll": "Full · {anzahl}",
+  "@kartenDeckVoll": {
+    "placeholders": {
+      "anzahl": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenZeitlimit": "Time limit",
+  "kartenMinuten": "{minuten} min",
+  "@kartenMinuten": {
+    "placeholders": {
+      "minuten": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenSchwierigkeit": "Difficulty",
+  "kartenLeicht": "Easy",
+  "kartenNormal": "Normal",
+  "kartenHart": "Hard",
+  "kartenBrutal": "Brutal",
+  "kartenObergrenze": "Max per card",
+  "kartenObergrenzeKeine": "No limit",
+  "kartenAktionen": "Action cards",
+  "kartenAktionenHinweis": "Joker, Again, ×2 and Choice",
+  "kartenStapel": "Piles",
+  "kartenStapelHinzufuegen": "Add pile",
+  "kartenStapelEntfernen": "Remove pile",
+  "kartenStapelGestalten": "Color and symbol",
+  "kartenStart": "Let's go",
+  "kartenKeineUebungen": "Add exercises first – each can become a pile.",
+  "kartenKarteVon": "Card {nummer} of {gesamt}",
+  "@kartenKarteVon": {
+    "placeholders": {
+      "nummer": {
+        "type": "int"
+      },
+      "gesamt": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenKarteNummer": "Card {nummer}",
+  "@kartenKarteNummer": {
+    "placeholders": {
+      "nummer": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenJoker": "Joker",
+  "kartenJokerText": "Breathe – nothing to do",
+  "kartenNochmal": "Again",
+  "kartenNochmalText": "Repeat the last exercise",
+  "kartenNochmalLeer": "No exercise yet – free",
+  "kartenDoppelt": "×2",
+  "kartenDoppeltText": "The next card counts double",
+  "kartenDoppeltAktiv": "×2 active",
+  "kartenWahl": "Choice",
+  "kartenWahlText": "Pick your exercise",
+  "kartenTippen": "Tap = done",
+  "kartenWeiter": "Next",
+  "kartenWeniger": "One less",
+  "kartenMehr": "One more",
+  "kartenRueckgaengig": "Undo",
+  "kartenBeenden": "End",
+  "kartenBeendenFrage": "End game?",
+  "kartenBeendenText": "Cards so far stay in the result.",
+  "kartenGesamt": "{anzahl} reps so far",
+  "@kartenGesamt": {
+    "placeholders": {
+      "anzahl": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenFertig": "Deck survived!",
+  "kartenZeitAbgelaufen": "Time's up",
+  "kartenBeendet": "Game over",
+  "kartenErgebnisKarten": "{anzahl} cards",
+  "@kartenErgebnisKarten": {
+    "placeholders": {
+      "anzahl": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenErgebnisReps": "{anzahl} reps",
+  "@kartenErgebnisReps": {
+    "placeholders": {
+      "anzahl": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenSpeichern": "Save as workout",
+  "kartenGespeichert": "Saved",
+  "kartenNochmalSpielen": "Play again",
+  "kartenEinstellungen": "Change settings",
+  "kartenUebungWaehlen": "Pick an exercise",
+  "kartenSpieler": "Players",
+  "kartenSpielerName": "Player {nummer}",
+  "@kartenSpielerName": {
+    "placeholders": {
+      "nummer": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenAmZug": "Up: {name}",
+  "@kartenAmZug": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "kartenPause": "Rest between cards",
+  "kartenPauseAus": "Off",
+  "kartenSekunden": "{sekunden} s",
+  "@kartenSekunden": {
+    "placeholders": {
+      "sekunden": {
+        "type": "int"
+      }
+    }
+  },
+  "kartenPauseLaeuft": "Rest",
+  "kartenPauseUeberspringen": "Skip rest",
+  "kartenSpeichernFuer": "Save for {name}",
+  "@kartenSpeichernFuer": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "kartenFarbe": "Color {nummer}",
+  "@kartenFarbe": {
+    "placeholders": {
+      "nummer": {
+        "type": "int"
+      }
+    }
   }
 }

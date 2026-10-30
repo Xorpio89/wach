@@ -9,6 +9,7 @@ import '../../features/challenge/presentation/screens/challenges_list_screen.dar
 import '../../features/feedback/presentation/screens/feedback_screen.dart';
 import '../../features/gamification/presentation/screens/achievements_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/karten/presentation/screens/karten_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/workout/presentation/screens/workout_screen.dart';
 
@@ -57,6 +58,11 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) => const BattleScreen(),
       ),
       GoRoute(
+        path: '/karten',
+        name: 'karten',
+        builder: (context, state) => const KartenScreen(),
+      ),
+      GoRoute(
         path: '/achievements',
         name: 'achievements',
         builder: (context, state) => const AchievementsScreen(),
@@ -92,6 +98,7 @@ abstract final class Routes {
   static const challenges = 'challenges';
   static const challengeDetail = 'challenge-detail';
   static const battle = 'battle';
+  static const karten = 'karten';
   static const achievements = 'achievements';
   static const feedback = 'feedback';
   static const settings = 'settings';
